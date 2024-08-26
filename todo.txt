@@ -1,0 +1,42 @@
+
+fixed:
+SKROZ:
+<
+++
+--
+!=
+==
+>
+<=
+>=
+=
+
+
+FIX SVE OPERATORE KOJI IMAJU -> 
+
+addZeros function
+
+uraditi sa . mnozenje
+opearoti * za double i float i long double pa onda *=
+
+sortirati operatore
+
+
+dodati testing cases za mnozenje;
+
+
+
+dodati djeljenje
+dodati /=, / za osatle vrjednosti
+
+proveriti da radi
+
+dodati modus
+dodati %=
+
+proveriti da radi
+
+dodati sve operatore
+
+dodati provjeru broja, da li je validan, u stringu
+

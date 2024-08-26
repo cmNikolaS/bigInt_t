@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <iostream>
 #include <cctype>
+#include <sstream>
 
 class bigInt_t
 {
@@ -11,24 +12,106 @@ class bigInt_t
     std::string number = "0";
     bool isPositive = true;
 
+    template<typename T>
+    std::string toString(const T num)
+    {
+        std::ostringstream S;
+        S << num;
+        std::string str = S.str();
+        return str;
+    }
+
     inline int charToInt(const char c) const
     {
-        return c - '0';
+        if(!isdigit(c))
+        {
+            std::cerr << "char: " << c << std::endl;
+            assert(false && "charToInt, char is not digit char(0-9)!");
+        }
+        int i = int(c) - int('0');
+        return i;
     }
 
     inline char intToChar(const int i) const
     {
-        return i + '0';
+        char c = char(i + int('0'));
+        if(!isdigit(c))
+        {
+            std::cerr << "char: " << c << std::endl;
+            assert(false && "IntToChar, char is not digit char(0-9)!");
+        }
+        return c;
+    }
+
+    bool isNumValid()
+    {
+        //checking if there is dot if first char is 0
+        if(number.at(0) == '0' && number.size() > 1)
+        {
+            if(number.at(1) != '.')
+            {
+                std::cerr << number << "<-- this Number is not Valid!" << std::endl;
+                assert(false && "isNumValid, first char is '0' but second is not '.'!");
+            }
+        }
+        //checking if last char is dot
+        if(number.at(number.size() - 1) == '.')
+        {
+            std::cerr << number << "<-- this Number is not Valid!" << std::endl;
+            assert(false && "isNumValid, last char is '.'!");
+        }
+        //checking if all characters are digits
+        int numOfDots = 0;
+        for(char c : number)
+        {
+            if(c == '.') numOfDots++;
+            else if(!isdigit(c))
+            {
+                std::cerr << number << "<-- this Number is not Valid!" << std::endl;
+                assert(false && "isNumValid, char is not digit char(0-9)!");
+            }
+        }
+        //checking if there is more then one digit
+        if(numOfDots > 1)
+        {
+            std::cerr << number << "<-- this Number is not Valid!" << std::endl;
+            assert(false && "There is more then 1 dots in number!");
+        }
+        //checking if dot if first or last character
+        if(number.at(0) == '.' || number.at(number.size() - 1) == '.')
+        {
+            std::cerr << number << "<-- this Number is not Valid!" << std::endl;
+            assert(false && "Dot is First/Last character in Number!");
+        }
+        if(getNumOfDec(number) != 0)
+        {
+            for(int i = int(number.size()) - 1; i >= 0; i--)
+            {
+                char c = number.at(std::string::size_type(i));
+                if(c == '.') break;
+                if (c != '0') break;
+                if(c == '0')
+                {
+                    std::cerr << number << "<-- this Number is not Valid!" << std::endl;
+                    assert(false && "isNumValid, number is decimal and ends with 0!");
+                }
+                std::cerr << number << "<-- this Number is not Valid!" << std::endl;
+                std::cerr << number.at(std::string::size_type(i)) << "<-- this is not digit nor dot" << std::endl;
+                std::cerr << "How the *** we got here" << std::endl;
+                assert(false && "isNumValid, number is decimal and ends with 0!");
+            }
+        }
+        return true;
     }
 
     void takeNumber(const std::string NUMBER)
     {
-        if(NUMBER[0] == '-')
+        if(NUMBER.at(0) == '-')
         {
             isPositive = false;
             number = NUMBER.substr(1);
         }
-        else if(NUMBER[0] == '+')
+        else if(NUMBER.at(0) == '+')
         {
             isPositive = true;
             number = NUMBER.substr(1);
@@ -38,96 +121,197 @@ class bigInt_t
             isPositive = true;
             number = NUMBER;
         }
+        bigInt_t num;
+        num.number = number;
+        num.isPositive = isPositive;
+        formatNumber(num);
+        number = num.number;
+        if(!num.isPositive)
+            isPositive = false;
     }
 
-    void formatNumber(bigInt_t &number) const 
+    void formatNumber(bigInt_t &num) const 
+    {    
+        bigInt_t old = num;
+        std::string::size_type i = 0;
+        while ((i < num.number.size()) && (num.number.at(i) == '0')) ++i;
+        
+        if (i == num.number.size())
+        {
+            num.number = "0";
+            num.isPositive = true;
+        }
+        else num.number = num.number.substr(i);
+
+        if(getNumOfDec(num.number) != 0)
+        {
+            for (i = num.number.size() - 1; i > 0; --i)
+            {
+                if (num.number.at(i) == '0') num.number.pop_back();
+                else break;
+            }
+            if(num.number.at(num.number.size() - 1) == '.')
+            {
+                num.number.erase(num.number.size() - 1, 1);
+            }
+        }
+        if(!num.isNumValid())
+        {
+            std::cerr << "Number is not valid!" << std::endl;
+            std::cerr << "Old: " << old << std::endl;
+            std::cerr << "New: " << num << std::endl;
+            assert(false && "Number is not valid!");
+        }
+    }
+
+    std::string::size_type getNumOfDec(const std::string num) const
+    {   
+        std::string::size_type pos = num.find('.');
+        if (pos == std::string::npos) return 0;
+        return (num.size() - pos - 1);
+    }
+    
+    //removes first dot
+    inline void removeDot(std::string &num) const
     {
-
-        int i = 0;
-        while (i < number.number.size() && number.number[i] == '0')
-        {
-            ++i;
-        }
-
-        if (i == number.number.size())
-        {
-            number.number = "0";
-            number.isPositive = true;
-        }
-        else
-        {
-            number.number = number.number.substr(i);
-        }
+        std::string::size_type numOfDecimals = getNumOfDec(num);
+        if (numOfDecimals > 0)
+        num.erase(num.size() - numOfDecimals - 1, 1);
     }
 
-    public:
+    //fucked up function
+    void prepareForDivision(std::string &number1, std::string &number2) 
+    {
+        std::string::size_type n1_decimals = getNumOfDec(number1), n2_decimals = getNumOfDec(number2);
+
+        removeDot(number1);
+        removeDot(number2);
+
+        std::string::size_type nOfZ = (n1_decimals < n2_decimals) ? n1_decimals : n2_decimals;
+        std::string zeros(nOfZ, '0');
+        if(n1_decimals > n2_decimals)
+        number2.append(zeros);
+        else number1.append(zeros);
+    }
+
+    public://[]
     //constructors
     bigInt_t()
     {
         number = "0";
         isPositive = true;
     }
-    bigInt_t(const int NUMBER)
-    {
-        takeNumber(std::to_string(NUMBER));
-    }
-    bigInt_t(const std::string NUMBER)
-    {
-        takeNumber(NUMBER);
-    }
-    bigInt_t(const long long NUMBER)
-    {
-        takeNumber(std::to_string(NUMBER));
-    }
-    bigInt_t(const unsigned long long NUMBER)
-    { 
-        takeNumber(std::to_string(NUMBER));
-    }
-    //operator: int()
-    operator int()
-    {
-        return stoi(number);
-    }
-    operator long long()
-    {
-        return stoll(number);
-    }
-    operator unsigned long long()
-    {
-        return stoull(number);
-    }
-    operator std::string()
-    {
-        std::string toR = "\0";
-        if(!isPositive)
-        {
-            toR.push_back('-');
-        }
-        toR.append(number);
-        return toR;
-    }
-    //operator: =
-    void operator=(const bigInt_t num)
+    bigInt_t(const bigInt_t &num)
     {
         number = num.number;
         isPositive = num.isPositive;
     }
-    void operator=(const int number) 
-    { 
-        takeNumber(std::to_string(number));
-    }
-    void operator=(const std::string number) 
-    { 
-        takeNumber(number);
-    }
-    void operator=(const long long number)
+    bigInt_t(const int num)
     {
-        takeNumber(std::to_string(number));
+        takeNumber(std::to_string(num));
     }
-    void operator=(const unsigned long long number)
+    bigInt_t(std::string num)
     {
-        takeNumber(std::to_string(number));
+        takeNumber(num);
     }
+    bigInt_t(const long long num)
+    {
+        takeNumber(std::to_string(num));
+    }
+    bigInt_t(const unsigned long long num)
+    { 
+        takeNumber(std::to_string(num));
+    }    
+    bigInt_t(const float num)
+    {
+        takeNumber(toString<float>(num));
+    }
+    bigInt_t(const double num)
+    {
+        takeNumber(toString<double>(num));
+    }
+    bigInt_t(const long double num)
+    {
+        takeNumber(toString<long double>(num));
+    }
+    //converson operators:
+    operator int()
+    {
+        std::string num = number;
+        if(!isPositive) num = '-' + number;
+        return stoi(number);
+    }
+    operator std::string()
+    {
+        std::string num = number;
+        if(!isPositive) num = '-' + number;
+        return num;
+    }
+    operator long long()
+    {
+        std::string num = number;
+        if(!isPositive) num = '-' + number;
+        return stoll(number);
+    }
+    operator unsigned long long()
+    {
+        std::string num = number;
+        if(!isPositive) num = '-' + number;
+        return stoull(number);
+    }
+    operator float()
+    {
+        std::string num = number;
+        if(!isPositive) num = '-' + number;
+        return stof(number);
+    }
+    operator double()
+    {
+        std::string num = number;
+        if(!isPositive) num = '-' + number;
+        return stod(number);
+    }
+    operator long double()
+    {
+        std::string num = number;
+        if(!isPositive) num = '-' + number;
+        return stold(number);
+    }
+    //operator: =
+    void operator=(const bigInt_t num)
+    {
+        this->number = num.number;
+        this->isPositive = num.isPositive;
+    }
+    void operator=(const int num) 
+    { 
+        takeNumber(std::to_string(num));
+    }
+    void operator=(const std::string num) 
+    { 
+        takeNumber(num);
+    }
+    void operator=(const long long num)
+    {
+        takeNumber(std::to_string(num));
+    }
+    void operator=(const unsigned long long num)
+    {
+        takeNumber(std::to_string(num));
+    }
+    void operator=(const float num)
+    {
+        takeNumber(toString<float>(num));
+    }
+    void operator=(const double num)
+    {
+        takeNumber(toString<double>(num));
+    }
+    void operator=(const long double num)
+    {
+        takeNumber(toString<long double>(num));
+    }
+                //I/O OPERATORS
     //operator: <<
     friend std::ostream &operator<<(std::ostream &os, const bigInt_t number)
     {
@@ -146,601 +330,689 @@ class bigInt_t
         number.takeNumber(temp);
         return is;
     }
+                //RELATIONAL OPERATORS:
     //operator: ==
-    const bool operator==(const bigInt_t number) const
+    bool operator==(const bigInt_t num) const 
     {
-        if(this->isPositive == number.isPositive)
-        {
-            if(this->number.size() == number.number.size())
-            {
-                for(int i = 0; i < this->number.size(); i++)
-                {
-                    if(this->number[i] != number.number[i])
-                        { return false; }
-                }
-                return true;
-            }
-        }
-        return false;
+        if (isPositive != num.isPositive) return false;
+        if (number != num.number) return false;
+        return true;
     }
-    const bool operator==(const int number) const
+    bool operator==(const int num) const
     {
-        bigInt_t num = number;
-        return this->operator==(num);
+        bigInt_t bNum = num;
+        return (*this == bNum);
     }
-    const bool operator==(const std::string number) const
+    bool operator==(const std::string num) const
     {
-        bigInt_t num = number;
-        return this->operator==(bigInt_t(number));
+        bigInt_t bNum = num;
+        return (*this == bNum);
     }
-    const bool operator==(const long long number) const
+    bool operator==(const long long num) const
     {
-        bigInt_t num = number;
-        return this->operator==(num);
+        bigInt_t bNum = num;
+        return (*this == bNum);
     }
-    const bool operator==(const unsigned long long number) const
+    bool operator==(const unsigned long long num) const
     {
-        bigInt_t num = number;
-        return this->operator==(num);
+        bigInt_t bNum = num;
+        return (*this == bNum);
     }   
+    bool operator==(const float num) const
+    {
+        bigInt_t bNum = num;
+        return (*this == bNum);
+    }   
+    bool operator==(const double num) const
+    {
+        bigInt_t bNum = num;
+        return (*this == bNum);
+    }
+    bool operator==(const long double num) const
+    {
+        bigInt_t bNum = num;
+        return (*this == bNum);
+    }
     //operator: !=
-    const bool operator!=(const bigInt_t number) const
+    bool operator!=(const bigInt_t num) const
     {
-        return !this->operator==(number);
+        return !(*this == num);
     }
-    const bool operator!=(const int number) const
+    bool operator!=(const int num) const
     {
-        return !this->operator==(number);
+        return !(*this == num);
     }
-    const bool operator!=(const std::string number) const
+    bool operator!=(const std::string num) const
     {
-        return !this->operator==(number);
+        return !(*this == num);
     }
-    const bool operator!=(const long long number) const
+    bool operator!=(const long long num) const
     {
-        bigInt_t num = number;
-        return !this->operator==(num);
+        return !(*this == num);
     }
-    const bool operator!=(const unsigned long long number) const
+    bool operator!=(const unsigned long long num) const
     {
-        return !this->operator==(number);
+        return !(*this == num);
+    }
+    bool operator!=(const float num) const
+    {
+        return !(*this == num);
+    }
+    bool operator!=(const double num) const
+    {
+        return !(*this == num);
+    }
+    bool operator!=(const long double num) const
+    {
+        return !(*this == num);
     }
     //operator: <
-    bool operator<(const bigInt_t number)
+    bool operator<(const bigInt_t num) const
     {
-        if(this->isPositive != number.isPositive)
-        {
-            if(number.isPositive == true)
-            {
-                return true;
-            }
-        }
+        if(this->isPositive != num.isPositive) return this->isPositive;
+
+        if(*this == num) return false;
+
+        std::string::size_type tD = getNumOfDec(this->number), nD = getNumOfDec(num.number); 
+        bool isSmaller;
+
+        if(this->number.size() - tD < num.number.size() - nD) isSmaller = true;
+        else if(this->number.size() - tD > num.number.size() - nD) isSmaller = false;
         else
-        {
-            if(number.isPositive == true)
+        {  
+            std::string thisNumber = this->number, number_2 = num.number;
+            if(tD > nD)
             {
-                if(number.number.size() > this->number.size())
-                {
-                    return true;
-                }
-                else if (number.number.size() == this->number.size())
-                {
-                    for(int i = 0; i < number.number.size(); i++)
-                    {
-                        if(charToInt(number.number[i]) > charToInt(this->number[i]))
-                        {
-                            return true;
-                        }
-                    }
-                }
+                number_2.append(tD - nD, '0');
             }
-            else
+            else if (nD > tD)
             {
-                if(number.number.size() < this->number.size())
+                thisNumber.append(nD - tD, '0');
+            }
+            
+            std::string::size_type i = 0, min = number_2.size();
+            for(; i < min; i++)
+            {
+                if(thisNumber.at(i) == '.' && number_2.at(i) == '.') continue;
+                if(charToInt(thisNumber.at(i)) < charToInt(number_2.at(i))) { isSmaller = true; break; }
+                else if(charToInt(thisNumber.at(i)) > charToInt(number_2.at(i))){ isSmaller = false; break; }
+                else
                 {
-                    return true;
-                }
-                else if(number.number.size() == this->number.size())
-                {
-                    for(int i = 0; i < number.number.size(); i++)
-                    {
-                        if(charToInt(number.number[i]) < charToInt(this->number[i]))
-                        {
-                            return true;
-                        }
-                    }
+                    if(i == (min - 1))
+                    return false;
                 }
             }
         }
-        return false;
+        if(!this->isPositive)
+        isSmaller = !isSmaller;
+        
+        return isSmaller;
     }
-    bool operator<(const int number)
+    bool operator<(const int iN) const
     {
-        bigInt_t numberr = number;
-        return this->operator<(number);
+        bigInt_t num = iN;
+        return this->operator<(num);
     }
-    bool operator<(const std::string number)
+    bool operator<(const std::string sN) const
     {
-        bigInt_t numberr = number;
-        return this->operator<(number);
+        bigInt_t num = sN;
+        return this->operator<(num);
     }
-    bool operator<(const long long number)
+    bool operator<(const long long llN) const
     {
-        bigInt_t numberr = number;
-        return this->operator<(number);
+        bigInt_t num = llN;
+        return this->operator<(num);
     }
-    bool operator<(const unsigned long long number)
+    bool operator<(const unsigned long long ullN) const
     {
-        bigInt_t numberr = number;
-        return this->operator<(number);
+        bigInt_t num = ullN;
+        return this->operator<(num);
+    }
+    bool operator<(const float fN) const
+    {
+        bigInt_t num = fN;
+        return this->operator<(num);
+    }
+    bool operator<(const double dN) const
+    {
+        bigInt_t num = dN;
+        return this->operator<(num);
+    }
+    bool operator<(const long double dN) const
+    {
+        bigInt_t num = dN;
+        return this->operator<(num);
     }
     //operator: >
-    bool operator>(const bigInt_t number)
+    bool operator>(const bigInt_t num) const
     {
-        if(!this->operator==(number))
-                    { return !this->operator<(number); }
+        if(!(*this == num) && !(*this < num)) return true;
         return false;
     }
-    bool operator>(const int number)
+    bool operator>(const int num) const
     {
-        if(!this->operator==(number))
-                    { return !this->operator<(number); }
+        if(!(*this == num) && !(*this < num)) return true;
         return false;
     }
-    bool operator>(const std::string number)
+    bool operator>(const std::string num) const
     {
-        if(!this->operator==(number))
-                    { return !this->operator<(number); }
+        if(!(*this == num) && !(*this < num)) return true;
+        return false;    }
+    bool operator>(const long long num) const
+    {
+        if(!(*this == num) && !(*this < num)) return true;
+        return false;    }
+    bool operator>(const unsigned long long num) const
+    {
+        if(!(*this == num) && !(*this < num)) return true;
         return false;
     }
-    bool operator>(const long long number)
+    bool operator>(const float num) const
     {
-        if(!this->operator==(number))
-                    { return !this->operator<(number); }
+        if(!(*this == num) && !(*this < num)) return true;
         return false;
     }
-    bool operator>(const unsigned long long number)
+    bool operator>(const double num) const
     {
-        if(!this->operator==(number))
-                    { return !this->operator<(number); }
+        if(!(*this == num) && !(*this < num)) return true;
+        return false;
+    }
+    bool operator>(const long double num) const
+    {
+        if(!(*this == num) && !(*this < num)) return true;
         return false;
     }
     //operator: <=
-    bool operator<=(const bigInt_t number)
+    bool operator<=(const bigInt_t num) const
     {
-        if(this->operator<(number) || this->operator==(number))
-                        {return true;}
-        return false;
+        return (*this < num || *this == num);
     }
-    bool operator<=(const int number)
+    bool operator<=(const int num) const
     {
-        if(this->operator<(number) || this->operator==(number))
-                        {return true;}
-        return false;
+        return (*this < num || *this == num);
     }
-    bool operator<=(const std::string number)
+    bool operator<=(const std::string num) const
     {
-        if(this->operator<(number) || this->operator==(number))
-                        {return true;}
-        return false;
+        return (*this < num || *this == num);
     }
-    bool operator<=(const long long number)
+    bool operator<=(const long long num) const
     {
-        if(this->operator<(number) || this->operator==(number))
-                        {return true;}
-        return false;
+        return (*this < num || *this == num);
     }
-    bool operator<=(const unsigned long long number)
+    bool operator<=(const unsigned long long num) const
     {
-        if(this->operator<(number) || this->operator==(number))
-                        {return true;}
-        return false;
+        return (*this < num || *this == num);
+    }
+    bool operator<=(const float num) const
+    {
+        return (*this < num || *this == num);
+    }
+    bool operator<=(const double num) const
+    {
+        return (*this < num || *this == num);
+    }
+    bool operator<=(const long double num) const
+    {
+        return (*this < num || *this == num);
     }
     //operator: >=
-    bool operator>=(const bigInt_t number)
+    bool operator>=(const bigInt_t num) const
     {
-        if(this->operator>(number) || this->operator==(number))
-                { return true; }
-        return false;
+        return (*this > num || *this == num);
     }
-    bool operator>=(const int number)
+    bool operator>=(const int num) const
     {
-        if(this->operator>(number) || this->operator==(number))
-                { return true; }
-        return false;
+        return (*this > num || *this == num);
     }
-    bool operator>=(const std::string number)
+    bool operator>=(const std::string num) const
     {
-        if(this->operator>(number) || this->operator==(number))
-                { return true; }
-        return false;
+        return (*this > num || *this == num);
     }
-    bool operator>=(const long long number)
+    bool operator>=(const long long num) const
     {
-        if(this->operator>(number) || this->operator==(number))
-                { return true; }
-        return false;
+        return (*this > num || *this == num);
     }
-    bool operator>=(const unsigned long long number)
+    bool operator>=(const unsigned long long num) const
     {
-        if(this->operator>(number) || this->operator==(number))
-                { return true; }
-        return false;
+        return (*this > num || *this == num);
     }
+    bool operator>=(const float num) const
+    {
+        return (*this > num || *this == num);
+    }
+    bool operator>=(const double num) const
+    {
+        return (*this > num || *this == num);
+    }
+    bool operator>=(const long double num) const
+    {
+        return (*this > num || *this == num);
+    }    
+                //UNARY OPERATORS:
     //operator: ++
     bigInt_t operator++()
     {
-        return this->operator+(1);
+        *this = *this + 1;
+        return *this;
+    }
+    bigInt_t operator++(int)
+    {
+        bigInt_t old = *this;
+        operator++();
+        return old;
     }
     //operator: --
     bigInt_t operator--()
     {
-        return this->operator-(1);
+        return *this - 1;    
     }
+    bigInt_t operator--(int)
+    {
+        bigInt_t old = *this;
+        operator--();
+        return old;
+    }
+                //ASSIGMENT OPERATORS:
     //operator: +=
-    bigInt_t &operator+=(const bigInt_t number)
+    bigInt_t operator+=(const bigInt_t num)
     {
-        this->operator=(this->operator+(number));
+        *this = *this + num;
         return *this;
     }
-    bigInt_t &operator+=(const int number)
+    bigInt_t operator+=(const int num)
     {
-        this->operator=(this->operator+(number));
+        *this = *this + num;
         return *this;
     }
-    bigInt_t &operator+=(const std::string number)
+    bigInt_t operator+=(const std::string num)
     {
-        this->operator=(this->operator+(number));
+        *this = *this + num;
         return *this;
     }
-    bigInt_t &operator+=(const long long number)
+    bigInt_t operator+=(const long long num)
     {
-        this->operator=(this->operator+(number));
+        *this = *this + num;
         return *this;
     }
-    bigInt_t &operator+=(const unsigned long long number)
+    bigInt_t operator+=(const unsigned long long num)
     {
-        this->operator=(this->operator+(number));
+        *this = *this + num;
+        return *this;
+    }
+    bigInt_t operator+=(const float num)
+    {
+        *this = *this + num;
+        return *this;
+    }
+    bigInt_t operator+=(const double num)
+    {
+        *this = *this + num;
+        return *this;
+    }
+    bigInt_t operator+=(const long double num)
+    {
+        *this = *this + num;
         return *this;
     }
     //operator: -=
-    bigInt_t &operator-=(const bigInt_t number)
+    bigInt_t operator-=(const bigInt_t num)
     {
-        *this = *this - number;
+        *this = *this - num;
         return *this;
     }
-    bigInt_t &operator-=(const int number)
+    bigInt_t operator-=(const int num)
     {
-        *this = *this - number;
+        return *this - num;
+    }
+    bigInt_t operator-=(const std::string num)
+    {
+        return *this - num;
+    }
+    bigInt_t operator-=(const long long num)
+    {
+        return *this - num;
+    }
+    bigInt_t operator-=(const unsigned long long num)
+    {
+        return *this - num;
+    }
+    bigInt_t operator-=(const float num)
+    {
+        *this = *this - num;
         return *this;
     }
-    bigInt_t &operator-=(const std::string number)
+    bigInt_t operator-=(const double num)
     {
-        *this = *this - number;
+        *this = *this - num;
         return *this;
     }
-    bigInt_t &operator-=(const long long number)
+    bigInt_t operator-=(const long double num)
     {
-        *this = *this - number;
-        return *this;
-    }
-    bigInt_t &operator-=(const unsigned long long number)
-    {
-        *this = *this - number;
+        *this = *this - num;
         return *this;
     }
     //operator *=
-    bigInt_t &operator*=(const bigInt_t number)
+    bigInt_t &operator*=(const bigInt_t num)
     {
-        *this = *this * number;
+        *this = *this * num;
         return *this;
     }
-    bigInt_t &operator*=(const int number)
+    bigInt_t &operator*=(const int num)
     {
-        *this = *this * number;
+        *this = *this * num;
         return *this;
     }
-    bigInt_t &operator*=(const std::string number)
+    bigInt_t &operator*=(const std::string num)
     {
-        *this = *this * number;
+        *this = *this * num;
         return *this;
     }
-    bigInt_t &operator*=(const long long number)
+    bigInt_t &operator*=(const long long num)
     {
-        *this = *this * number;
+        *this = *this * num;
         return *this;
     }
-    bigInt_t &operator*=(const unsigned long long number)
+    bigInt_t &operator*=(const unsigned long long num)
     {
-        *this = *this * number;
+        *this = *this * num;
         return *this;
     }
     //operator: +
-    const bigInt_t operator+(const bigInt_t num) const
+    const bigInt_t operator+(const bigInt_t Num) const
     {
-        bigInt_t number = num;
-        bigInt_t thisNumber = *this;
-        if(this->isPositive == number.isPositive)
+        bigInt_t num = Num;
+        bigInt_t tNum = *this;
+        bigInt_t result;
+
+        if(this->isPositive == num.isPositive)
         {
-            bigInt_t result;
             result.isPositive = this->isPositive;
-            number.isPositive = true;
-            thisNumber.isPositive = true;
-            //get smaller and bigger number 
-            std::string number_1;
-            std::string number_2;
-            if(thisNumber >= number)
-            {
-                number_1 = this->number;
-                number_2 = number.number;
-            }
-            else
-            {
-                number_2 = this->number;
-                number_1 = number.number;
-            }
-            //reverse it
+
+            num.isPositive = true;
+            tNum.isPositive = true;
+
+            std::string number_1 = tNum.number;
+            std::string number_2 = num.number;
+
+            std::string::size_type numOfD_1 = getNumOfDec(number_1);
+            std::string::size_type numOfD_2 = getNumOfDec(number_2);
+            std::string::size_type maxDec = std::max(numOfD_1, numOfD_2);
+
+            removeDot(number_1);
+            removeDot(number_2);
+            
+            if (numOfD_1 < maxDec) number_1.append(maxDec - numOfD_1, '0');  
+            if (numOfD_2 < maxDec) number_2.append(maxDec - numOfD_2, '0');
+
             std::reverse(number_1.begin(), number_1.end());
             std::reverse(number_2.begin(), number_2.end());
-            //get size of smaller and bigger number
-            int sizeOfMin = number_2.size();
-            int sizeOfMax = number_1.size();
-            //get default result
+
+            std::string::size_type sizeOfMax = std::max(number_1.size(), number_2.size());
+
             std::string result_s;
-            int remainder = 0;
-            //operate
-            for(int i = 0; i < sizeOfMax; ++i)
+            std::string::size_type remainder = 0;
+
+            for (std::string::size_type i = 0; i < sizeOfMax; ++i) 
             {
-                int tResult = charToInt(number_1[i]) + remainder;
-                if(i < sizeOfMin)
-                {
-                    tResult += charToInt(number_2[i]);
-                }
-                result_s.push_back(intToChar(tResult % 10));
-                remainder = tResult / 10;
+                std::string::size_type digit1 = (i < number_1.size()) ?
+                std::string::size_type(charToInt(number_1.at(i))) : std::string::size_type(0);
+                
+                std::string::size_type digit2 = (i < number_2.size()) ?
+                std::string::size_type(charToInt(number_2.at(i))) : std::string::size_type(0);
+
+                std::string::size_type sum = digit1 + digit2 + remainder;
+                remainder = sum / 10;
+                result_s.push_back(intToChar(int(sum) % 10));
             }
-            if (remainder != 0)
-            {
-                result_s.push_back(intToChar(remainder));
-            }
-            //reverse and set result
+            if (remainder != 0) result_s.push_back(intToChar(int(remainder)));
+
             std::reverse(result_s.begin(), result_s.end());
+
+            if (maxDec > 0) result_s.insert(result_s.size() - maxDec, 1, '.');
+    
             result.number = result_s;
-            //format and return
-            formatNumber(result);
-            return result;
         }
         else
         {
-            bigInt_t result;
-            bool firstSign = thisNumber.isPositive;
-            thisNumber.isPositive = number.isPositive = true;
-            if(firstSign == true)
+            bool firstSign = tNum.isPositive;
+            tNum.isPositive = num.isPositive = true;
+            if(firstSign)
             {
-                if(thisNumber > number)
+                if(tNum >= num)
                 {
-                    result = thisNumber - number;
+                    result = tNum - num;
+                    result.isPositive = true;
                 }
                 else
                 {
-                    result = -(number - thisNumber);
+                    result = num - tNum;
+                    result.isPositive = false;
                 }
-            }
+            } 
             else
             {   
-                thisNumber.isPositive = true;
-                number.isPositive = true;
-                if(thisNumber > number)
+                if(tNum >= num)
                 {
+                    result = tNum - num;
                     result.isPositive = false;
-                    result = -(thisNumber - number);
                 }
                 else
                 {
+                    result = (num - tNum);
                     result.isPositive = true;
-                    result = number - thisNumber;                   
                 }
             }
-            formatNumber(result);
-            return result;
         }
+        formatNumber(result);
+        return result;
     }
-    const bigInt_t operator+(const int number) const
+    const bigInt_t operator+(const int num) const
     {
-        bigInt_t number_ = number;
-        return this->operator+(number_);
+        bigInt_t bN = num;
+        return *this + bN;
     }
-    const bigInt_t operator+(const std::string number) const
+    const bigInt_t operator+(const std::string num) const
     {
-        bigInt_t number_ = number;
-        return this->operator+(number_);
+        bigInt_t bN = num;
+        return *this + bN;
     }
-    const bigInt_t operator+(const long long number) const
+    const bigInt_t operator+(const long long num) const
     {
-        bigInt_t number_ = number;
-        return this->operator+(number_);
+        bigInt_t bN = num;
+        return *this + bN;
     }
-    const bigInt_t operator+(const unsigned long long number) const
+    const bigInt_t operator+(const unsigned long long num) const
     {
-        bigInt_t number_ = number;
-        return this->operator+(number_);
+        bigInt_t bN = num;
+        return *this + bN;
+    }
+    const bigInt_t operator+(const float num) const
+    {
+        bigInt_t bN = num;
+        return *this + bN;
+    }
+    const bigInt_t operator+(const double num) const
+    {
+        bigInt_t bN = num;
+        return *this + bN;
+    }
+    const bigInt_t operator+(const long double num) const
+    {
+        bigInt_t bN = num;
+        return *this + bN;
     }
     bigInt_t operator+() const
     {
         return *this;
     }
     //operator: -
-    const bigInt_t operator-(const bigInt_t num) const
-    {
-        bigInt_t thisNumber = *this, number = num;
-        if(this->isPositive == number.isPositive)
+    const bigInt_t operator-(const bigInt_t Num) const
+    {            
+        bigInt_t result;
+        bigInt_t thisNumber = *this, num = Num;
+        if(this->isPositive == num.isPositive)
         {
-            bigInt_t result;
             //handle number sign
             bool areNumberPositive = thisNumber.isPositive;
-            number.isPositive = thisNumber.isPositive = true;
-            if(thisNumber >= number)
+            num.isPositive = thisNumber.isPositive = true;
+            
+            //handle number and result positivity
+            std::string number_1, number_2;
+            if(thisNumber > num)
             {
                 result.isPositive = true;
-            }
+                number_1 = thisNumber.number;
+                number_2 = num.number;
+            } 
             else
             {
                 result.isPositive = false;
+                number_1 = num.number;
+                number_2 = thisNumber.number;
             }
-            if(!areNumberPositive)
-            {
-                result.isPositive = !result.isPositive;
-            }
+            if(!areNumberPositive) result.isPositive = !result.isPositive;
             
-            //get smaller and bigger number
-            std::string number_1, number_2;
-            if (thisNumber >= number)
-            {
-                number_1 = this->number;
-                number_2 = number.number;
-            }
-            else
-            {
-                number_1 = number.number;
-                number_2 = this->number;
-            }
+
+            //handle dots
+            std::string::size_type
+             nOfD1 = getNumOfDec(number_1),
+             nOfD2 = getNumOfDec(number_2),
+             maxDec = std::max(nOfD1, nOfD2);
+            
+            removeDot(number_1);
+            removeDot(number_2);
+
+            if(nOfD1 < maxDec) number_1.append(maxDec - nOfD1, '0');
+            if(nOfD2 < maxDec) number_2.append(maxDec - nOfD2, '0');
             //reverse
             std::reverse(number_1.begin(), number_1.end());
             std::reverse(number_2.begin(), number_2.end());
             //size of min and max
-            int sizeOfMin = number_2.size();
-            int sizeOfMax = number_1.size();
+            std::string::size_type sizeOfMin = number_2.size();
+            std::string::size_type sizeOfMax = number_1.size();
             //prepare
-            std::string result_s;
+            std::string result_s = "\0";
             int remainder = 0;
-            for(int i = 0; i < sizeOfMax; ++i)
+            for(std::string::size_type i = 0; i < sizeOfMax; ++i)
             {
-                int tResult = charToInt(number_1[i])-remainder;
-                if (i < sizeOfMin)
-                {
-                    tResult -= charToInt(number_2[i]);
-                }
-                remainder = 0;
-                while(tResult < 0)
+                int tResult = charToInt(number_1.at(i));
+                if (i < sizeOfMin) tResult -= charToInt(number_2.at(i));
+                tResult -= remainder;
+                if(tResult < 0)
                 {
                     tResult += 10;
-                    remainder++;
+                    remainder = 1;
                 }
+                else remainder = 0;
+
                 result_s.push_back(intToChar(tResult));
             }
-            //handle number
+            //handle remainder
             std::reverse(result_s.begin(), result_s.end());
+            if (maxDec > 0) result_s.insert(result_s.size() - maxDec, 1, '.');
             result.number = result_s;
-            //format and return
-            if(remainder != 0)
-            {
-                std::string num1S(result_s.size(), '0');
-                num1S = '1' + num1S;
-                bigInt_t numm2 = result_s;
-                bigInt_t numm1 = num1S;
-                bigInt_t tR(numm1 - numm2);
-                result.number = tR.number;
-                result.isPositive = !result.isPositive;
-            }
-            formatNumber(result);
-            return result;
         }
         else
         {
-            bigInt_t result;
             bool isFirstNumberPositive;
             isFirstNumberPositive = this->isPositive;
-            thisNumber.isPositive = number.isPositive = true;
-
-            if(isFirstNumberPositive)
-            {
-                result = thisNumber + number;
-            }
-            else
-            {
-                result = -(thisNumber + number);
-            }
-            formatNumber(result);
-            return result;
+            thisNumber.isPositive = num.isPositive = true;
+            result = thisNumber + num;
+            if(!isFirstNumberPositive)
+            result = -result;
         }
+        formatNumber(result);
+        return result;
     }
-    const bigInt_t operator-(const int number) const
+    const bigInt_t operator-(const int num) const
     {
-        bigInt_t number_ = number;
-        return this->operator-(number_);
+        bigInt_t bN = num;
+        return *this - bN;
     }
-    const bigInt_t operator-(const std::string number) const
+    const bigInt_t operator-(const std::string num) const
     {
-        bigInt_t number_ = number;
-        return this->operator-(number_);
+        bigInt_t bN = num;
+        return *this - bN;
     }
-    const bigInt_t operator-(const long long number) const
+    const bigInt_t operator-(const long long num) const
     {
-        bigInt_t number_ = number;
-        return this->operator-(number_);
+        bigInt_t bN = num;
+        return *this - bN;
     }
-    const bigInt_t operator-(unsigned long long number) const
+    const bigInt_t operator-(const unsigned long long num) const
     {
-        bigInt_t number_ = number;
-        return this->operator-(number_);
+        bigInt_t bN = num;
+        return *this - bN;
     }
-    bigInt_t operator-() const
+    const bigInt_t operator-(const float num) const
+    {
+        bigInt_t bN = num;
+        return *this - bN;
+    }
+    const bigInt_t operator-(const double num) const
+    {
+        bigInt_t bN = num;
+        return *this - bN;
+    }
+    const bigInt_t operator-(const long double num) const
+    {
+        bigInt_t bN = num;
+        return *this - bN;
+    }
+    const bigInt_t operator-() const
     {
         bigInt_t result = *this;
         result.isPositive = !this->isPositive;
         return result;
     }
-
-    const bigInt_t operator*(const bigInt_t number) const
+    //operator: *
+    const bigInt_t operator*(const bigInt_t tNum) const
     {
+        bigInt_t num = tNum;
         bigInt_t result;
         //handle 0
-        if(*this == 0 || number == 0)
+        if(*this == 0 || num == 0)
         {
             result = 0;
             return result;
         }
         //handle positivity
-        result.isPositive = (this->isPositive == number.isPositive);
-        //get bigger and smaller number
-        std::string number_1, number_2;
-        if(this->number.size() <= number.number.size())
+        result.isPositive = (this->isPositive == num.isPositive);
+        //get bigger and smaller num
+        std::string num_1, num_2;
+        if(this->number.size() <= num.number.size())
         {
-            number_1 = this->number;
-            number_2 = number.number;
+            num_1 = this->number;
+            num_2 = num.number;
         }
         else
         {
-            number_1 = number.number;
-            number_2 = this->number;
+            num_1 = num.number;
+            num_2 = this->number;
         }
-        int sizeOfMin = number_1.size();
-        int sizeOfMax = number_2.size();
+        const std::string::size_type sizeOfMin = num_1.size(), sizeOfMax = num_2.size();
         //reverse
-        std::reverse(number_1.begin(), number_1.end());
-        std::reverse(number_2.begin(), number_2.end());
+        std::reverse(num_1.begin(), num_1.end());
+        std::reverse(num_2.begin(), num_2.end());
 
         bigInt_t result_T;
-        int k = 0;
         int curr1 = 0, curr2 = 0;
-        for(int i = 0; i < sizeOfMin; i++)
+        for(std::string::size_type i = 0; i < sizeOfMin; i++)
         {
-            curr1 = charToInt(number_1[i]);
+            curr1 = charToInt(num_1.at(i));
             std::string result_s_T = "\0";
             int remainder = 0, t = 0;
-            for(int j = 0; j < sizeOfMax; j++)
+            for(std::string::size_type j = 0; j < sizeOfMax; j++)
             {
-                curr2 = charToInt(number_2[j]);
+                curr2 = charToInt(num_2.at(j));
                 t = curr1 * curr2 + remainder;
                 remainder = t / 10;
                 result_s_T.push_back(intToChar(t % 10));
             }
-            if(remainder != 0)
-            {
-                result_s_T.push_back(intToChar(remainder));
-            }
+            if(remainder != 0) result_s_T.push_back(intToChar(remainder));
+
             std::reverse(result_s_T.begin(), result_s_T.end());
-            for(int k = 0; k < i; k++)
+            for(std::string::size_type k = 0; k < i; k++)
             {
                 result_s_T.push_back('0');
             }
@@ -753,23 +1025,49 @@ class bigInt_t
     }
     const bigInt_t operator*(const int num) const
     {
-        bigInt_t number = num;
-        return (*this * number);
+        bigInt_t bN = num;
+        return *this * bN;
     }
     const bigInt_t operator*(const std::string num) const
     {
-        bigInt_t number = num;
-        return (*this * number);
+        bigInt_t bN = num;
+        return *this * bN;
     }
     const bigInt_t operator*(const long long num) const
     {
-        bigInt_t number = num;
-        return (*this * number);
+        bigInt_t bN = num;
+        return *this * bN;
     }
     const bigInt_t operator*(const unsigned long long num) const
     {
-        bigInt_t number = num;
-        return (*this * number);
+        bigInt_t bN = num;
+        return *this * bN;
+    }
+
+    const bigInt_t operator/(const bigInt_t num)
+    {
+        //handle 0
+        assert((num != 0 || *this != 0) && "Divison with zero is impossible.");
+        
+        //get result positivity
+        bigInt_t result = 0;
+        result.isPositive = (this->isPositive == num.isPositive);
+        
+        //prepare
+        std::string number1 = this->number;
+        std::string number2 = num.number;
+        prepareForDivision(number1, number2);        
+
+        //LOGIC
+
+
+
+
+
+
+        //FORMAT AND RETURN
+        formatNumber(result);
+        return result;
     }
 
 };

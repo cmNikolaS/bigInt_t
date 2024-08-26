@@ -1,0 +1,60 @@
+    const bigInt_t operator*(const bigInt_t tNum) const
+    {
+        bigInt_t num = tNum;
+        bigInt_t result;
+        //handle 0
+        if(*this == 0 || num == 0)
+        {
+            result = 0;
+            return result;
+        }
+        //handle positivity
+        result.isPositive = (this->isPositive == num.isPositive);
+        //get bigger and smaller num
+        std::string num_1, num_2;
+        if(this->number.size() <= num.num.size())
+        {
+            num_1 = this->number;
+            num_2 = num.num;
+        }
+        else
+        {
+            num_1 = num.num;
+            num_2 = this->number;
+        }
+        int sizeOfMin = num_1.size();
+        int sizeOfMax = num_2.size();
+        //reverse
+        std::reverse(num_1.begin(), num_1.end());
+        std::reverse(num_2.begin(), num_2.end());
+
+        bigInt_t result_T;
+        int curr1 = 0, curr2 = 0;
+        for(int i = 0; i < sizeOfMin; i++)
+        {
+            curr1 = charToInt(num_1[i]);
+            std::string result_s_T = "\0";
+            int remainder = 0, t = 0;
+            for(int j = 0; j < sizeOfMax; j++)
+            {
+                curr2 = charToInt(num_2[j]);
+                t = curr1 * curr2 + remainder;
+                remainder = t / 10;
+                result_s_T.push_back(intToChar(t % 10));
+            }
+            if(remainder != 0)
+            {
+                result_s_T.push_back(intToChar(remainder));
+            }
+            std::reverse(result_s_T.begin(), result_s_T.end());
+            for(int k = 0; k < i; k++)
+            {
+                result_s_T.push_back('0');
+            }
+            result_T += result_s_T;
+        }
+
+        result.num = result_T.num;
+        formatnum(result);
+        return result;
+    }
