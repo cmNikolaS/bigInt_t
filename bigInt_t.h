@@ -134,14 +134,26 @@ class bigInt_t
     {    
         bigInt_t old = num;
         std::string::size_type i = 0;
+
         while ((i < num.number.size()) && (num.number.at(i) == '0')) ++i;
-        
+
         if (i == num.number.size())
         {
             num.number = "0";
             num.isPositive = true;
         }
-        else num.number = num.number.substr(i);
+        else
+        {
+            if(getNumOfDec(num.number) != 0)
+            {
+                if(num.number.at(0) == '.')
+                {
+                    num.number = '0' + num.number;
+                }
+            }
+            else
+            num.number = num.number.substr(i);
+        }
 
         if(getNumOfDec(num.number) != 0)
         {
@@ -180,21 +192,23 @@ class bigInt_t
     }
 
     //fucked up function
-    void prepareForDivision(std::string &number1, std::string &number2) 
+    void removeZerosAndDots(std::string &num) const
     {
-        std::string::size_type n1_decimals = getNumOfDec(number1), n2_decimals = getNumOfDec(number2);
-
-        removeDot(number1);
-        removeDot(number2);
-
-        std::string::size_type nOfZ = (n1_decimals < n2_decimals) ? n1_decimals : n2_decimals;
-        std::string zeros(nOfZ, '0');
-        if(n1_decimals > n2_decimals)
-        number2.append(zeros);
-        else number1.append(zeros);
+        std::string::size_type n = getNumOfDec(num);
+        if(n > 0)
+        {
+            for(std::string::size_type i = 0; i <= n; i++)
+            {
+                if(num.at(i) == '0' || num.at(i) == '.')
+                num.erase(i, 1);
+                else break;
+            }
+        }
+        removeDot(num);
     }
 
-    public://[]
+    public:
+                //ASSIGMENT OPERATORS
     //constructors
     bigInt_t()
     {
@@ -612,7 +626,7 @@ class bigInt_t
         operator--();
         return old;
     }
-                //ASSIGMENT OPERATORS:
+                //ASSIGMENT OPERATORS 2:
     //operator: +=
     bigInt_t operator+=(const bigInt_t num)
     {
@@ -713,6 +727,21 @@ class bigInt_t
         return *this;
     }
     bigInt_t &operator*=(const unsigned long long num)
+    {
+        *this = *this * num;
+        return *this;
+    }
+    bigInt_t &operator*=(const float num)
+    {
+        *this = *this * num;
+        return *this;
+    }
+    bigInt_t &operator*=(const double num)
+    {
+        *this = *this * num;
+        return *this;
+    }
+    bigInt_t &operator*=(const long double num)
     {
         *this = *this * num;
         return *this;
@@ -966,7 +995,7 @@ class bigInt_t
         return result;
     }
     //operator: *
-    const bigInt_t operator*(const bigInt_t tNum) const
+    const bigInt_t operator*(const bigInt_t &tNum) const
     {
         bigInt_t num = tNum;
         bigInt_t result;
@@ -990,12 +1019,16 @@ class bigInt_t
             num_1 = num.number;
             num_2 = this->number;
         }
+        const std::string::size_type numOfD = (getNumOfDec(num_1) + getNumOfDec(num_2));
+
+        removeZerosAndDots(num_1);
+        removeZerosAndDots(num_2);
+
         const std::string::size_type sizeOfMin = num_1.size(), sizeOfMax = num_2.size();
         //reverse
         std::reverse(num_1.begin(), num_1.end());
         std::reverse(num_2.begin(), num_2.end());
-
-        bigInt_t result_T;
+        bigInt_t result_T = 0;
         int curr1 = 0, curr2 = 0;
         for(std::string::size_type i = 0; i < sizeOfMin; i++)
         {
@@ -1018,7 +1051,18 @@ class bigInt_t
             }
             result_T += result_s_T;
         }
-
+        if(numOfD > 0)
+        {
+            if(numOfD >= result_T.number.size())
+            {
+                result_T.number.insert(0, numOfD - result_T.number.size() + 1, '0');
+                result_T.number.insert(1, 1, '.');
+            }
+            else
+            {
+                result_T.number.insert(result_T.number.size() - numOfD, 1, '.');
+            }
+        }
         result.number = result_T.number;
         formatNumber(result);
         return result;
@@ -1043,21 +1087,34 @@ class bigInt_t
         bigInt_t bN = num;
         return *this * bN;
     }
+    const bigInt_t operator*(const float num) const
+    {
+        bigInt_t bN = num;
+        return *this * bN;
+    }
+    const bigInt_t operator*(const double num) const
+    {
+        bigInt_t bN = num;
+        return *this * bN;
+    }
+    const bigInt_t operator*(const long double num) const
+    {
+        bigInt_t bN = num;
+        return *this * bN;
+    }
 
     const bigInt_t operator/(const bigInt_t num)
     {
         //handle 0
-        assert((num != 0 || *this != 0) && "Divison with zero is impossible.");
+        assert((num != 0 && *this != 0) && "Divison with zero is impossible.");
         
         //get result positivity
         bigInt_t result = 0;
         result.isPositive = (this->isPositive == num.isPositive);
-        
         //prepare
         std::string number1 = this->number;
         std::string number2 = num.number;
-        prepareForDivision(number1, number2);        
-
+        
         //LOGIC
 
 

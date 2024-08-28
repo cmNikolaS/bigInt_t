@@ -15,12 +15,12 @@ void getNumbersAndOp(std::string problem, bigInt_t &A, bigInt_t &B, char &op)
 
 int main()
 {
-    
 
-
+    double a = 0.5, b = 0.5;
+    bigInt_t A = a, B = b;
+    std::cout <<"A * B = " << A * B << std::endl;
     do
     {
-        bigInt_t A, B;
         char op;
         std::string problem;
         std::cout << "Enter a problem (e.g., 123 + 456): ";

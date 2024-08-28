@@ -1,35 +1,10 @@
 
-fixed:
-SKROZ:
-<
-++
---
-!=
-==
->
-<=
->=
-=
-
-
 FIX SVE OPERATORE KOJI IMAJU -> 
-
-addZeros function
-
-uraditi sa . mnozenje
-opearoti * za double i float i long double pa onda *=
-
-sortirati operatore
-
-
-dodati testing cases za mnozenje;
-
-
 
 dodati djeljenje
 dodati /=, / za osatle vrjednosti
 
-proveriti da radi
+proveriti da radi, test cases za djeljenje
 
 dodati modus
 dodati %=
