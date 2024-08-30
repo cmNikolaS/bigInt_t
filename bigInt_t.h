@@ -144,15 +144,18 @@ class bigInt_t
         }
         else
         {
-            if(getNumOfDec(num.number) != 0)
+            if(getNumOfDec(num.number) > 0)
             {
+                num.number = num.number.substr(i);
                 if(num.number.at(0) == '.')
                 {
                     num.number = '0' + num.number;
                 }
             }
             else
-            num.number = num.number.substr(i);
+            {
+                num.number = num.number.substr(i);
+            }
         }
 
         if(getNumOfDec(num.number) != 0)
@@ -462,40 +465,33 @@ class bigInt_t
         
         return isSmaller;
     }
-    bool operator<(const int iN) const
+    bool operator<(const int num) const
     {
-        bigInt_t num = iN;
-        return this->operator<(num);
+        return *this < bigInt_t(num);
     }
-    bool operator<(const std::string sN) const
+    bool operator<(const std::string num) const
     {
-        bigInt_t num = sN;
-        return this->operator<(num);
+        return *this < bigInt_t(num);
     }
-    bool operator<(const long long llN) const
+    bool operator<(const long long num) const
     {
-        bigInt_t num = llN;
-        return this->operator<(num);
+        return *this < bigInt_t(num);
     }
-    bool operator<(const unsigned long long ullN) const
+    bool operator<(const unsigned long long num) const
     {
-        bigInt_t num = ullN;
-        return this->operator<(num);
+        return *this < bigInt_t(num);
     }
-    bool operator<(const float fN) const
+    bool operator<(const float num) const
     {
-        bigInt_t num = fN;
-        return this->operator<(num);
+        return *this < bigInt_t(num);
     }
-    bool operator<(const double dN) const
+    bool operator<(const double num) const
     {
-        bigInt_t num = dN;
-        return this->operator<(num);
+        return *this < bigInt_t(num);
     }
-    bool operator<(const long double dN) const
+    bool operator<(const long double num) const
     {
-        bigInt_t num = dN;
-        return this->operator<(num);
+        return *this < bigInt_t(num);
     }
     //operator: >
     bool operator>(const bigInt_t num) const
@@ -706,44 +702,80 @@ class bigInt_t
         return *this;
     }
     //operator *=
-    bigInt_t &operator*=(const bigInt_t num)
+    bigInt_t operator*=(const bigInt_t num)
     {
         *this = *this * num;
         return *this;
     }
-    bigInt_t &operator*=(const int num)
+    bigInt_t operator*=(const int num)
     {
         *this = *this * num;
         return *this;
     }
-    bigInt_t &operator*=(const std::string num)
+    bigInt_t operator*=(const std::string num)
     {
         *this = *this * num;
         return *this;
     }
-    bigInt_t &operator*=(const long long num)
+    bigInt_t operator*=(const long long num)
     {
         *this = *this * num;
         return *this;
     }
-    bigInt_t &operator*=(const unsigned long long num)
+    bigInt_t operator*=(const unsigned long long num)
     {
         *this = *this * num;
         return *this;
     }
-    bigInt_t &operator*=(const float num)
+    bigInt_t operator*=(const float num)
     {
         *this = *this * num;
         return *this;
     }
-    bigInt_t &operator*=(const double num)
+    bigInt_t operator*=(const double num)
     {
         *this = *this * num;
         return *this;
     }
-    bigInt_t &operator*=(const long double num)
+    bigInt_t operator*=(const long double num)
     {
         *this = *this * num;
+        return *this;
+    }
+    //operator: /=
+    bigInt_t operator/=(const int num)
+    {
+        *this = *this / num;
+        return *this;
+    }
+    bigInt_t operator/=(const std::string num)
+    {
+        *this = *this / num;
+        return *this;
+    }
+    bigInt_t operator/=(const long long num)
+    {
+        *this = *this / num;
+        return *this;
+    }
+    bigInt_t operator/=(const unsigned long long num)
+    {
+        *this = *this / num;
+        return *this;
+    }
+    bigInt_t operator/=(const float num)
+    {
+        *this = *this / num;
+        return *this;
+    }
+    bigInt_t operator/=(const double num)
+    {
+        *this = *this / num;
+        return *this;
+    }
+    bigInt_t operator/=(const long double num)
+    {
+        *this = *this / num;
         return *this;
     }
     //operator: +
@@ -837,38 +869,31 @@ class bigInt_t
     }
     const bigInt_t operator+(const int num) const
     {
-        bigInt_t bN = num;
-        return *this + bN;
+        return *this + bigInt_t(num);
     }
     const bigInt_t operator+(const std::string num) const
     {
-        bigInt_t bN = num;
-        return *this + bN;
+        return *this + bigInt_t(num);
     }
     const bigInt_t operator+(const long long num) const
     {
-        bigInt_t bN = num;
-        return *this + bN;
+        return *this + bigInt_t(num);
     }
     const bigInt_t operator+(const unsigned long long num) const
     {
-        bigInt_t bN = num;
-        return *this + bN;
+        return *this + bigInt_t(num);
     }
     const bigInt_t operator+(const float num) const
     {
-        bigInt_t bN = num;
-        return *this + bN;
+        return *this + bigInt_t(num);
     }
     const bigInt_t operator+(const double num) const
     {
-        bigInt_t bN = num;
-        return *this + bN;
+        return *this + bigInt_t(num);
     }
     const bigInt_t operator+(const long double num) const
     {
-        bigInt_t bN = num;
-        return *this + bN;
+        return *this + bigInt_t(num);
     }
     bigInt_t operator+() const
     {
@@ -955,38 +980,31 @@ class bigInt_t
     }
     const bigInt_t operator-(const int num) const
     {
-        bigInt_t bN = num;
-        return *this - bN;
+        return *this - bigInt_t(num);
     }
     const bigInt_t operator-(const std::string num) const
     {
-        bigInt_t bN = num;
-        return *this - bN;
+        return *this - bigInt_t(num);
     }
     const bigInt_t operator-(const long long num) const
     {
-        bigInt_t bN = num;
-        return *this - bN;
+        return *this - bigInt_t(num);
     }
     const bigInt_t operator-(const unsigned long long num) const
     {
-        bigInt_t bN = num;
-        return *this - bN;
+        return *this - bigInt_t(num);
     }
     const bigInt_t operator-(const float num) const
     {
-        bigInt_t bN = num;
-        return *this - bN;
+        return *this - bigInt_t(num);
     }
     const bigInt_t operator-(const double num) const
     {
-        bigInt_t bN = num;
-        return *this - bN;
+        return *this - bigInt_t(num);
     }
     const bigInt_t operator-(const long double num) const
     {
-        bigInt_t bN = num;
-        return *this - bN;
+        return *this - bigInt_t(num);
     }
     const bigInt_t operator-() const
     {
@@ -1069,41 +1087,34 @@ class bigInt_t
     }
     const bigInt_t operator*(const int num) const
     {
-        bigInt_t bN = num;
-        return *this * bN;
+        return *this * bigInt_t(num);
     }
     const bigInt_t operator*(const std::string num) const
     {
-        bigInt_t bN = num;
-        return *this * bN;
+        return *this * bigInt_t(num);
     }
     const bigInt_t operator*(const long long num) const
     {
-        bigInt_t bN = num;
-        return *this * bN;
+        return *this * bigInt_t(num);
     }
     const bigInt_t operator*(const unsigned long long num) const
     {
-        bigInt_t bN = num;
-        return *this * bN;
+        return *this * bigInt_t(num);
     }
     const bigInt_t operator*(const float num) const
     {
-        bigInt_t bN = num;
-        return *this * bN;
+        return *this * bigInt_t(num);
     }
     const bigInt_t operator*(const double num) const
     {
-        bigInt_t bN = num;
-        return *this * bN;
+        return *this * bigInt_t(num);
     }
     const bigInt_t operator*(const long double num) const
     {
-        bigInt_t bN = num;
-        return *this * bN;
+        return *this * bigInt_t(num);
     }
 
-    const bigInt_t operator/(const bigInt_t num)
+    const bigInt_t operator/(const bigInt_t num) const
     {
         //handle 0
         assert((num != 0 && *this != 0) && "Divison with zero is impossible.");
@@ -1126,5 +1137,32 @@ class bigInt_t
         formatNumber(result);
         return result;
     }
-
+    const bigInt_t operator/(const int num) const
+    {
+        return *this / bigInt_t(num);
+    }
+    const bigInt_t operator/(const std::string num) const
+    {
+        return *this / bigInt_t(num);
+    }
+    const bigInt_t operator/(const long long num) const
+    {
+        return *this / bigInt_t(num);
+    }
+    const bigInt_t operator/(const unsigned long long num) const
+    {
+        return *this / bigInt_t(num);
+    }
+    const bigInt_t operator/(const float num) const
+    {
+        return *this / bigInt_t(num);
+    }
+    const bigInt_t operator/(const double num) const
+    {
+        return *this / bigInt_t(num);
+    }
+    const bigInt_t operator/(const long double num) const
+    {
+        return *this / bigInt_t(num);
+    }
 };
