@@ -1,17 +1,9 @@
+proveriti da radi djeljenje
 
-FIX SVE OPERATORE KOJI IMAJU -> 
-
-dodati djeljenje
-dodati /=, / za osatle vrjednosti
-
-proveriti da radi, test cases za djeljenje
+funkcija sqrt, pow
 
 dodati modus
 dodati %=
-
 proveriti da radi
 
 dodati sve operatore
-
-dodati provjeru broja, da li je validan, u stringu
-

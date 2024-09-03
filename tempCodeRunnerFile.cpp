@@ -1,2 +1,1 @@
-
-    // std::cin.sync_with_stdio(false);
+447.398 / 41.4298

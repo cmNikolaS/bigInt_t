@@ -13,14 +13,13 @@ class bigInt_t
     bool isPositive = true;
 
     template<typename T>
-    std::string toString(const T num)
+    std::string toString(const T num) const
     {
         std::ostringstream S;
         S << num;
         std::string str = S.str();
         return str;
     }
-
     inline int charToInt(const char c) const
     {
         if(!isdigit(c))
@@ -31,7 +30,6 @@ class bigInt_t
         int i = int(c) - int('0');
         return i;
     }
-
     inline char intToChar(const int i) const
     {
         char c = char(i + int('0'));
@@ -42,7 +40,6 @@ class bigInt_t
         }
         return c;
     }
-
     bool isNumValid()
     {
         //checking if there is dot if first char is 0
@@ -103,7 +100,6 @@ class bigInt_t
         }
         return true;
     }
-
     void takeNumber(const std::string NUMBER)
     {
         if(NUMBER.at(0) == '-')
@@ -129,7 +125,6 @@ class bigInt_t
         if(!num.isPositive)
             isPositive = false;
     }
-
     void formatNumber(bigInt_t &num) const 
     {    
         bigInt_t old = num;
@@ -150,6 +145,11 @@ class bigInt_t
                 if(num.number.at(0) == '.')
                 {
                     num.number = '0' + num.number;
+                    if(num.number == "0.")
+                    {
+                        num.number = "0";
+                        num.isPositive = true;
+                    }
                 }
             }
             else
@@ -170,6 +170,7 @@ class bigInt_t
                 num.number.erase(num.number.size() - 1, 1);
             }
         }
+        
         if(!num.isNumValid())
         {
             std::cerr << "Number is not valid!" << std::endl;
@@ -178,14 +179,12 @@ class bigInt_t
             assert(false && "Number is not valid!");
         }
     }
-
     std::string::size_type getNumOfDec(const std::string num) const
     {   
         std::string::size_type pos = num.find('.');
         if (pos == std::string::npos) return 0;
         return (num.size() - pos - 1);
     }
-    
     //removes first dot
     inline void removeDot(std::string &num) const
     {
@@ -193,24 +192,59 @@ class bigInt_t
         if (numOfDecimals > 0)
         num.erase(num.size() - numOfDecimals - 1, 1);
     }
-
-    //fucked up function
     void removeZerosAndDots(std::string &num) const
     {
         std::string::size_type n = getNumOfDec(num);
-        if(n > 0)
-        {
-            for(std::string::size_type i = 0; i <= n; i++)
+        for(std::string::size_type i = 0; i < n; i++)
             {
                 if(num.at(i) == '0' || num.at(i) == '.')
                 num.erase(i, 1);
                 else break;
             }
-        }
         removeDot(num);
     }
 
     public:
+    std::string::size_type getNumberOfDecimals()
+    {
+        return getNumOfDec(number);
+    }
+    bigInt_t percision(std::string::size_type p)
+    {
+        if(p == getNumberOfDecimals()) return *this;
+        
+        bigInt_t T = *this;        
+        if(p < getNumberOfDecimals())
+        {
+            T.number = this->number.substr(0, p + std::string::size_type(numOfNonDecPlaces()));
+            if(p == 0)
+            {
+                T.number.pop_back();
+            }
+            else if((T.number.size()) < (this->number.size() - 1))
+            {
+                if(charToInt(T.number.at(T.number.size())) > 4)
+                {
+                    if(T.number.at(T.number.size() - 1) != '9')
+                    {
+                        T.number.at(T.number.size() - 1) = intToChar(charToInt(T.number.at(T.number.size() - 1)) + 1); 
+                    }
+                }
+            }
+        }
+        else 
+        {
+            if(getNumberOfDecimals() == 0) T.number.push_back('.');
+            T.number.append(p - std::string::size_type(getNumberOfDecimals()), '0');
+        }
+        return T;
+    }
+    std::string::size_type numOfNonDecPlaces() const
+    {
+        std::string::size_type p = number.find('.');
+        if(p == std::string::npos) return number.size(); 
+        return p;
+    }
                 //ASSIGMENT OPERATORS
     //constructors
     bigInt_t()
@@ -351,45 +385,48 @@ class bigInt_t
     //operator: ==
     bool operator==(const bigInt_t num) const 
     {
-        if (isPositive != num.isPositive) return false;
-        if (number != num.number) return false;
+        bigInt_t A(*this), B(num);
+        formatNumber(A);
+        formatNumber(B);
+        if (B.isPositive != A.isPositive) return false;
+        if (B.number != A.number) return false;
         return true;
     }
     bool operator==(const int num) const
     {
-        bigInt_t bNum = num;
-        return (*this == bNum);
+        return (*this == bigInt_t(num));
     }
     bool operator==(const std::string num) const
     {
-        bigInt_t bNum = num;
-        return (*this == bNum);
+        return (*this == bigInt_t(num));
     }
     bool operator==(const long long num) const
     {
-        bigInt_t bNum = num;
-        return (*this == bNum);
+        return (*this == bigInt_t(num));
     }
     bool operator==(const unsigned long long num) const
     {
-        bigInt_t bNum = num;
-        return (*this == bNum);
+        return (*this == bigInt_t(num));
     }   
     bool operator==(const float num) const
     {
-        bigInt_t bNum = num;
-        return (*this == bNum);
+        return (*this == bigInt_t(num));
     }   
     bool operator==(const double num) const
     {
-        bigInt_t bNum = num;
-        return (*this == bNum);
+        return (*this == bigInt_t(num));
     }
     bool operator==(const long double num) const
     {
-        bigInt_t bNum = num;
-        return (*this == bNum);
+        return (*this == bigInt_t(num));
     }
+    friend bool operator==(const int B1, const bigInt_t B2); 
+    friend bool operator==(const std::string B1, const bigInt_t B2); 
+    friend bool operator==(const long long B1, const bigInt_t B2); 
+    friend bool operator==(const unsigned long long B1, const bigInt_t B2); 
+    friend bool operator==(const float B1, const bigInt_t B2); 
+    friend bool operator==(const double B1, const bigInt_t B2); 
+    friend bool operator==(const long double B1, const bigInt_t B2);
     //operator: !=
     bool operator!=(const bigInt_t num) const
     {
@@ -423,6 +460,13 @@ class bigInt_t
     {
         return !(*this == num);
     }
+    friend bool operator!=(const int B1, const bigInt_t B2); 
+    friend bool operator!=(const std::string B1, const bigInt_t B2); 
+    friend bool operator!=(const long long B1, const bigInt_t B2); 
+    friend bool operator!=(const unsigned long long B1, const bigInt_t B2); 
+    friend bool operator!=(const float B1, const bigInt_t B2); 
+    friend bool operator!=(const double B1, const bigInt_t B2); 
+    friend bool operator!=(const long double B1, const bigInt_t B2);
     //operator: <
     bool operator<(const bigInt_t num) const
     {
@@ -431,22 +475,32 @@ class bigInt_t
         if(*this == num) return false;
 
         std::string::size_type tD = getNumOfDec(this->number), nD = getNumOfDec(num.number); 
-        bool isSmaller;
+        
+        bool isSmaller = false;
 
-        if(this->number.size() - tD < num.number.size() - nD) isSmaller = true;
-        else if(this->number.size() - tD > num.number.size() - nD) isSmaller = false;
+        if(this->numOfNonDecPlaces() < num.numOfNonDecPlaces()) isSmaller = true;
+        else if(this->numOfNonDecPlaces() > num.numOfNonDecPlaces()) isSmaller = false;
         else
         {  
             std::string thisNumber = this->number, number_2 = num.number;
             if(tD > nD)
             {
+                if(nD == 0)
+                {
+                    number_2.push_back('.');
+                    tD--;
+                }
                 number_2.append(tD - nD, '0');
             }
             else if (nD > tD)
             {
+                if(tD == 0)
+                {
+                    thisNumber.push_back('.');
+                    nD--;
+                }
                 thisNumber.append(nD - tD, '0');
             }
-            
             std::string::size_type i = 0, min = number_2.size();
             for(; i < min; i++)
             {
@@ -455,7 +509,7 @@ class bigInt_t
                 else if(charToInt(thisNumber.at(i)) > charToInt(number_2.at(i))){ isSmaller = false; break; }
                 else
                 {
-                    if(i == (min - 1))
+                    if(i == min)
                     return false;
                 }
             }
@@ -493,6 +547,13 @@ class bigInt_t
     {
         return *this < bigInt_t(num);
     }
+    friend bool operator<(const int B1, const bigInt_t B2); 
+    friend bool operator<(const std::string B1, const bigInt_t B2); 
+    friend bool operator<(const long long B1, const bigInt_t B2); 
+    friend bool operator<(const unsigned long long B1, const bigInt_t B2); 
+    friend bool operator<(const float B1, const bigInt_t B2); 
+    friend bool operator<(const double B1, const bigInt_t B2); 
+    friend bool operator<(const long double B1, const bigInt_t B2);
     //operator: >
     bool operator>(const bigInt_t num) const
     {
@@ -532,9 +593,16 @@ class bigInt_t
         if(!(*this == num) && !(*this < num)) return true;
         return false;
     }
+    friend bool operator>(const int B1, const bigInt_t B2); 
+    friend bool operator>(const std::string B1, const bigInt_t B2); 
+    friend bool operator>(const long long B1, const bigInt_t B2); 
+    friend bool operator>(const unsigned long long B1, const bigInt_t B2); 
+    friend bool operator>(const float B1, const bigInt_t B2); 
+    friend bool operator>(const double B1, const bigInt_t B2); 
+    friend bool operator>(const long double B1, const bigInt_t B2);
     //operator: <=
     bool operator<=(const bigInt_t num) const
-    {
+    {  
         return (*this < num || *this == num);
     }
     bool operator<=(const int num) const
@@ -565,6 +633,13 @@ class bigInt_t
     {
         return (*this < num || *this == num);
     }
+    friend bool operator<=(const int B1, const bigInt_t B2); 
+    friend bool operator<=(const std::string B1, const bigInt_t B2); 
+    friend bool operator<=(const long long B1, const bigInt_t B2); 
+    friend bool operator<=(const unsigned long long B1, const bigInt_t B2); 
+    friend bool operator<=(const float B1, const bigInt_t B2); 
+    friend bool operator<=(const double B1, const bigInt_t B2); 
+    friend bool operator<=(const long double B1, const bigInt_t B2); 
     //operator: >=
     bool operator>=(const bigInt_t num) const
     {
@@ -597,8 +672,16 @@ class bigInt_t
     bool operator>=(const long double num) const
     {
         return (*this > num || *this == num);
-    }    
-                //UNARY OPERATORS:
+    }
+    friend bool operator>=(const int B1, const bigInt_t B2); 
+    friend bool operator>=(const std::string B1, const bigInt_t B2); 
+    friend bool operator>=(const long long B1, const bigInt_t B2); 
+    friend bool operator>=(const unsigned long long B1, const bigInt_t B2); 
+    friend bool operator>=(const float B1, const bigInt_t B2); 
+    friend bool operator>=(const double B1, const bigInt_t B2); 
+    friend bool operator>=(const long double B1, const bigInt_t B2); 
+
+            //UNARY OPERATORS:
     //operator: ++
     bigInt_t operator++()
     {
@@ -664,6 +747,12 @@ class bigInt_t
         *this = *this + num;
         return *this;
     }
+    friend bigInt_t operator+=(const int B1, const bigInt_t B2);
+    friend bigInt_t operator+=(const long long, const bigInt_t B2);
+    friend bigInt_t operator+=(const unsigned long long B1, const bigInt_t B2);
+    friend bigInt_t operator+=(const float B1, const bigInt_t B2);
+    friend bigInt_t operator+=(const double B1, const bigInt_t B2);
+    friend bigInt_t operator+=(const long double B1, const bigInt_t B2);
     //operator: -=
     bigInt_t operator-=(const bigInt_t num)
     {
@@ -701,6 +790,12 @@ class bigInt_t
         *this = *this - num;
         return *this;
     }
+    friend bigInt_t operator-=(const int B1, const bigInt_t B2);
+    friend bigInt_t operator-=(const long long, const bigInt_t B2);
+    friend bigInt_t operator-=(const unsigned long long B1, const bigInt_t B2);
+    friend bigInt_t operator-=(const float B1, const bigInt_t B2);
+    friend bigInt_t operator-=(const double B1, const bigInt_t B2);
+    friend bigInt_t operator-=(const long double B1, const bigInt_t B2);
     //operator *=
     bigInt_t operator*=(const bigInt_t num)
     {
@@ -742,6 +837,12 @@ class bigInt_t
         *this = *this * num;
         return *this;
     }
+    friend bigInt_t operator*=(const int B1, const bigInt_t B2);
+    friend bigInt_t operator*=(const long long, const bigInt_t B2);
+    friend bigInt_t operator*=(const unsigned long long B1, const bigInt_t B2);
+    friend bigInt_t operator*=(const float B1, const bigInt_t B2);
+    friend bigInt_t operator*=(const double B1, const bigInt_t B2);
+    friend bigInt_t operator*=(const long double B1, const bigInt_t B2);
     //operator: /=
     bigInt_t operator/=(const int num)
     {
@@ -778,6 +879,12 @@ class bigInt_t
         *this = *this / num;
         return *this;
     }
+    friend bigInt_t operator/=(const int B1, const bigInt_t B2);
+    friend bigInt_t operator/=(const long long, const bigInt_t B2);
+    friend bigInt_t operator/=(const unsigned long long B1, const bigInt_t B2);
+    friend bigInt_t operator/=(const float B1, const bigInt_t B2);
+    friend bigInt_t operator/=(const double B1, const bigInt_t B2);
+    friend bigInt_t operator/=(const long double B1, const bigInt_t B2);
     //operator: +
     const bigInt_t operator+(const bigInt_t Num) const
     {
@@ -895,6 +1002,13 @@ class bigInt_t
     {
         return *this + bigInt_t(num);
     }
+    friend bigInt_t operator+(const int B1, const bigInt_t B2);
+    friend bigInt_t operator+(const std::string B1, const bigInt_t B2);
+    friend bigInt_t operator+(const long long B1, const bigInt_t B2);
+    friend bigInt_t operator+(const unsigned long long B1, const bigInt_t B2);
+    friend bigInt_t operator+(const float B1, const bigInt_t B2);
+    friend bigInt_t operator+(const double B1, const bigInt_t B2);
+    friend bigInt_t operator+(const long double B1, const bigInt_t B2);
     bigInt_t operator+() const
     {
         return *this;
@@ -1006,6 +1120,13 @@ class bigInt_t
     {
         return *this - bigInt_t(num);
     }
+    friend bigInt_t operator-(const int B1, const bigInt_t B2);
+    friend bigInt_t operator-(const std::string B1, const bigInt_t B2);
+    friend bigInt_t operator-(const long long B1, const bigInt_t B2);
+    friend bigInt_t operator-(const unsigned long long B1, const bigInt_t B2);
+    friend bigInt_t operator-(const float B1, const bigInt_t B2);
+    friend bigInt_t operator-(const double B1, const bigInt_t B2);
+    friend bigInt_t operator-(const long double B1, const bigInt_t B2);
     const bigInt_t operator-() const
     {
         bigInt_t result = *this;
@@ -1021,7 +1142,7 @@ class bigInt_t
         if(*this == 0 || num == 0)
         {
             result = 0;
-            return result;
+            return 0;
         }
         //handle positivity
         result.isPositive = (this->isPositive == num.isPositive);
@@ -1113,26 +1234,160 @@ class bigInt_t
     {
         return *this * bigInt_t(num);
     }
-
+    friend bigInt_t operator*(const int B1, const bigInt_t B2);
+    friend bigInt_t operator*(const std::string B1, const bigInt_t B2);
+    friend bigInt_t operator*(const long long B1, const bigInt_t B2);
+    friend bigInt_t operator*(const unsigned long long B1, const bigInt_t B2);
+    friend bigInt_t operator*(const float B1, const bigInt_t B2);
+    friend bigInt_t operator*(const double B1, const bigInt_t B2);
+    friend bigInt_t operator*(const long double B1, const bigInt_t B2);
+    //operator: /
     const bigInt_t operator/(const bigInt_t num) const
     {
         //handle 0
         assert((num != 0 && *this != 0) && "Divison with zero is impossible.");
-        
         //get result positivity
         bigInt_t result = 0;
         result.isPositive = (this->isPositive == num.isPositive);
         //prepare
-        std::string number1 = this->number;
-        std::string number2 = num.number;
-        
+        bigInt_t number1 = this->number;
+        bigInt_t number2 = num.number;
+        std::string result_s = "\0";        
         //LOGIC
+        int i = 0;
 
+        int numOfDecimals = 7;
 
+        bool hasDot = false;
+        // std::cout << "Pre while0" << std::endl;
+        // while(number1 < number2)
+        // {
+        //     i++;
+        //     number1 *= 10;
+        // }
+        // if(i >= numOfDecimals) return bigInt_t(0);
+        // result_s.append(i, '0');
+        // std::cout << "Posle while0" << std::endl;
+        // if(i == 1)
+        // {
+        //     result_s.push_back('.');
+        //     hasDot = true;
+        // }
+        // else if(i > 0)
+        // {
+        //     if(!hasDot){
+        //     result_s.insert(1, 1, '.');
+        //     hasDot = true;}
+        // }
+        while(i < numOfDecimals)
+        {    
+            i++;
+            while(number1 < number2)
+            {            i++;
 
+                if(!hasDot)
+                {
+                    result_s.push_back('.');
+                    hasDot = true;
+                }
+                else result_s.push_back('0');
 
+                number1 *= 10;
+                if(i == numOfDecimals)
+                {
+                    break;
+                }
+            }
+            if(number1 == number2)
+            {
+                result_s.push_back('1');
+                break;
+            }
 
+            bigInt_t j = 1;
+            while(number2 * (j+100000000000000) <= number1)//mrzi me da ovo automatizujem sad
+            {
+                j+=100000000000000;
+            }
+            while(number2 * (j+100000000000) <= number1)
+            {
+                j+=100000000000;
+            }
+            while(number2 * (j+10000000000) <= number1)
+            {
+                j+=10000000000;
+            }
+            while(number2 * (j+1000000000) <= number1)
+            {
+                j+=1000000000;
+            }
+            while(number2 * (j+100000000) <= number1)
+            {
+                j+=100000000;
+            }
+            while(number2 * (j+10000000) <= number1)
+            {
+                j+=10000000;
+            }
+            while(number2 * (j+1000000) <= number1)
+            {
+                j+=1000000;
+            }
+            while(number2 * (j+100000) <= number1)
+            {
+                j+=100000;
+            }
+            while(number2 * (j+10000) <= number1)
+            {
+                j+=10000;
+            }
+            while(number2 * (j+1000) <= number1)
+            {
+                j+=1000;
+            }
+            while(number2 * (j+100) <= number1)
+            {
+                j+=100;
+            }
+            while(number2 * (j+10) <= number1)
+            {
+                j+=10;
+            }
+            while(number2 * (j+1) <= number1)
+            {
+                j++;
+            }
+            std::cout << "f";
+            result_s.append(toString<bigInt_t>(j));
+            if(!hasDot)
+            {
+                result_s.push_back('.');
+                hasDot = true;
+            }
+            number1 -= (number2 * j);
+            number1 *= 10;
+            if(number1 == 0)
+            {
+                break;
+            }
+        }
 
+        if(result_s.size() > 0)
+        if(result_s.at(result_s.size() - 1) == '.')
+        {
+            result_s.pop_back();
+        }
+
+        if(i == numOfDecimals)
+        {
+            if((charToInt(result_s.at(result_s.size() - 1)) > 4) && (charToInt(result_s.at(result_s.size() - 2)) < 9))
+            {
+                result_s.at(result_s.size() - 2) = intToChar(charToInt(result_s.at(result_s.size() - 2)) + 1);
+            }
+            result_s.pop_back();
+        }
+
+        result.number = result_s;
         //FORMAT AND RETURN
         formatNumber(result);
         return result;
@@ -1165,4 +1420,446 @@ class bigInt_t
     {
         return *this / bigInt_t(num);
     }
+    friend bigInt_t operator/(const int B1, const bigInt_t B2);
+    friend bigInt_t operator/(const std::string B1, const bigInt_t B2);
+    friend bigInt_t operator/(const long long B1, const bigInt_t B2);
+    friend bigInt_t operator/(const unsigned long long B1, const bigInt_t B2);
+    friend bigInt_t operator/(const float B1, const bigInt_t B2);
+    friend bigInt_t operator/(const double B1, const bigInt_t B2);
+    friend bigInt_t operator/(const long double B1, const bigInt_t B2);
 };
+
+namespace big_Int_t
+{
+    bigInt_t min(const bigInt_t a, const bigInt_t b)
+{
+    if(b < a) return b;
+    return a;
+}
+    bigInt_t max(const bigInt_t a, const bigInt_t b)
+{
+    if(b > a) return b;
+    return a;
+}
+}
+//operator: +
+bigInt_t operator+(const int B1, const bigInt_t B2)
+{
+    return bigInt_t(B1) + B2;
+}
+bigInt_t operator+(const std::string B1, const bigInt_t B2)
+{
+    return bigInt_t(B1) + B2;
+}
+bigInt_t operator+(const long long B1, const bigInt_t B2)
+{
+    return bigInt_t(B1) + B2;
+}
+bigInt_t operator+(const unsigned long long B1, const bigInt_t B2)
+{
+    return bigInt_t(B1) + B2;
+}
+bigInt_t operator+(const float B1, const bigInt_t B2)
+{
+    return bigInt_t(B1) + B2;
+}
+bigInt_t operator+(const double B1, const bigInt_t B2)
+{
+    return bigInt_t(B1) + B2;
+}
+bigInt_t operator+(const long double B1, const bigInt_t B2)
+{
+    return bigInt_t(B1) + B2;
+}
+//operator: -
+bigInt_t operator-(const int B1, const bigInt_t B2)
+{
+    return bigInt_t(B1) - B2;
+}
+bigInt_t operator-(const std::string B1, const bigInt_t B2)
+{
+    return bigInt_t(B1) - B2;
+}
+bigInt_t operator-(const long long B1, const bigInt_t B2)
+{
+    return bigInt_t(B1) - B2;
+}
+bigInt_t operator-(const unsigned long long B1, const bigInt_t B2)
+{
+    return bigInt_t(B1) - B2;
+}
+bigInt_t operator-(const float B1, const bigInt_t B2)
+{
+    return bigInt_t(B1) - B2;
+}
+bigInt_t operator-(const double B1, const bigInt_t B2)
+{
+    return bigInt_t(B1) - B2;
+}
+bigInt_t operator-(const long double B1, const bigInt_t B2)
+{
+    return bigInt_t(B1) - B2;
+}
+//operator: *
+bigInt_t operator*(const int B1, const bigInt_t B2)
+{
+    return bigInt_t(B1) * B2;
+}
+bigInt_t operator*(const std::string B1, const bigInt_t B2)
+{
+    return bigInt_t(B1) * B2;
+}
+bigInt_t operator*(const long long B1, const bigInt_t B2)
+{
+    return bigInt_t(B1) * B2;
+}
+bigInt_t operator*(const unsigned long long B1, const bigInt_t B2)
+{
+    return bigInt_t(B1) * B2;
+}
+bigInt_t operator*(const float B1, const bigInt_t B2)
+{
+    return bigInt_t(B1) * B2;
+}
+bigInt_t operator*(const double B1, const bigInt_t B2)
+{
+    return bigInt_t(B1) * B2;
+}
+bigInt_t operator*(const long double B1, const bigInt_t B2)
+{
+    return bigInt_t(B1) * B2;
+}
+//operator: /
+bigInt_t operator/(const int B1, const bigInt_t B2)
+{
+    return bigInt_t(B1) / B2;
+}
+bigInt_t operator/(const std::string B1, const bigInt_t B2)
+{
+    return bigInt_t(B1) / B2;
+}
+bigInt_t operator/(const long long B1, const bigInt_t B2)
+{
+    return bigInt_t(B1) / B2;
+}
+bigInt_t operator/(const unsigned long long B1, const bigInt_t B2)
+{
+    return bigInt_t(B1) / B2;
+}
+bigInt_t operator/(const float B1, const bigInt_t B2)
+{
+    return bigInt_t(B1) / B2;
+}
+bigInt_t operator/(const double B1, const bigInt_t B2)
+{
+    return bigInt_t(B1) / B2;
+}
+bigInt_t operator/(const long double B1, const bigInt_t B2)
+{
+    return bigInt_t(B1) / B2;
+}
+//operator: +=
+bigInt_t operator+=(int B1, const bigInt_t B2)
+{
+    B1 = B1 + B2;
+    return B1;
+}
+bigInt_t operator+=(long long B1, const bigInt_t B2)
+{
+    B1 = B1 + B2;
+    return B1;
+}
+bigInt_t operator+=(unsigned long long B1, const bigInt_t B2)
+{
+    B1 = B1 + B2;
+    return B1;
+}
+bigInt_t operator+=(float B1, const bigInt_t B2)
+{
+    B1 = B1 + B2;
+    return B1;
+}
+bigInt_t operator+=(double B1, const bigInt_t B2)
+{
+    B1 = B1 + B2;
+    return B1;
+}
+bigInt_t operator+=(long double B1, const bigInt_t B2)
+{
+    B1 = B1 + B2;
+    return B1;
+}
+//operator -=
+bigInt_t operator-=(int B1, const bigInt_t B2)
+{
+    B1 = B1 - B2;
+    return B1;
+}
+bigInt_t operator-=(long long B1, const bigInt_t B2)
+{
+    B1 = B1 - B2;
+    return B1;
+}
+bigInt_t operator-=(unsigned long long B1, const bigInt_t B2)
+{
+    B1 = B1 - B2;
+    return B1;
+}
+bigInt_t operator-=(float B1, const bigInt_t B2)
+{
+    B1 = B1 - B2;
+    return B1;
+}
+bigInt_t operator-=(double B1, const bigInt_t B2)
+{
+    B1 = B1 - B2;
+    return B1;
+}
+bigInt_t operator-=(long double B1, const bigInt_t B2)
+{
+    B1 = B1 - B2;
+    return B1;
+}
+//operator: *=
+bigInt_t operator*=(int B1, const bigInt_t B2)
+{
+    B1 = B1 * B2;
+    return B1;
+}
+bigInt_t operator*=(long long B1, const bigInt_t B2)
+{
+    B1 = B1 * B2;
+    return B1;
+}
+bigInt_t operator*=(unsigned long long B1, const bigInt_t B2)
+{
+    B1 = B1 * B2;
+    return B1;
+}
+bigInt_t operator*=(float B1, const bigInt_t B2)
+{
+    B1 = B1 * B2;
+    return B1;
+}
+bigInt_t operator*=(double B1, const bigInt_t B2)
+{
+    B1 = B1 * B2;
+    return B1;
+}
+bigInt_t operator*=(long double B1, const bigInt_t B2)
+{
+    B1 = B1 * B2;
+    return B1;
+}
+//operator: /=
+bigInt_t operator/=(int B1, const bigInt_t B2)
+{
+    B1 = B1 / B2;
+    return B1;
+}
+bigInt_t operator/=(long long B1, const bigInt_t B2)
+{
+    B1 = B1 / B2;
+    return B1;
+}
+bigInt_t operator/=(unsigned long long B1, const bigInt_t B2)
+{
+    B1 = B1 / B2;
+    return B1;
+}
+bigInt_t operator/=(float B1, const bigInt_t B2)
+{
+    B1 = B1 / B2;
+    return B1;
+}
+bigInt_t operator/=(double B1, const bigInt_t B2)
+{
+    B1 = B1 / B2;
+    return B1;
+}
+bigInt_t operator/=(long double B1, const bigInt_t B2)
+{
+    B1 = B1 / B2;
+    return B1;
+}
+//operator: ==
+bool operator==(const int B1, const bigInt_t B2)
+{
+    return bigInt_t(B1) == B2;
+}
+bool operator==(const std::string B1, const bigInt_t B2)
+{
+    return bigInt_t(B1) == B2;
+}
+bool operator==(const long long B1, const bigInt_t B2)
+{
+    return bigInt_t(B1) == B2;
+}
+bool operator==(const unsigned long long B1, const bigInt_t B2)
+{
+    return bigInt_t(B1) == B2;
+}
+bool operator==(const float B1, const bigInt_t B2)
+{
+    return bigInt_t(B1) == B2;
+}
+bool operator==(const double B1, const bigInt_t B2)
+{
+    return bigInt_t(B1) == B2;
+}
+bool operator==(const long double B1, const bigInt_t B2)
+{
+    return bigInt_t(B1) == B2;
+}
+//operator: !=
+bool operator!=(const int B1, const bigInt_t B2)
+{
+    return !(bigInt_t(B1) == B2);
+}
+bool operator!=(const std::string B1, const bigInt_t B2)
+{
+    return !(bigInt_t(B1) == B2);
+}
+bool operator!=(const long long B1, const bigInt_t B2)
+{
+    return !(bigInt_t(B1) == B2);
+}
+bool operator!=(const unsigned long long B1, const bigInt_t B2)
+{
+    return !(bigInt_t(B1) == B2);
+}
+bool operator!=(const float B1, const bigInt_t B2)
+{
+    return !(bigInt_t(B1) == B2);
+}
+bool operator!=(const double B1, const bigInt_t B2)
+{
+    return !(bigInt_t(B1) == B2);
+}
+bool operator!=(const long double B1, const bigInt_t B2)
+{
+    return !(bigInt_t(B1) == B2);
+}
+//operator: <
+bool operator<(const int B1, const bigInt_t B2)
+{
+    return bigInt_t(B1) < B2;
+}
+bool operator<(const std::string B1, const bigInt_t B2)
+{
+    return bigInt_t(B1) < B2;
+}
+bool operator<(const long long B1, const bigInt_t B2)
+{
+    return bigInt_t(B1) < B2;
+}
+bool operator<(const unsigned long long B1, const bigInt_t B2)
+{
+    return bigInt_t(B1) < B2;
+}
+bool operator<(const float B1, const bigInt_t B2)
+{
+    return bigInt_t(B1) < B2;
+}
+bool operator<(const double B1, const bigInt_t B2)
+{
+    return bigInt_t(B1) < B2;
+}
+bool operator<(const long double B1, const bigInt_t B2)
+{
+    return bigInt_t(B1) < B2;
+}
+//operator: >
+bool operator>(const int B1, const bigInt_t B2)
+{
+        if(!(bigInt_t(B1) == B2) && !(bigInt_t(B1) < B2)) return true;
+        return false;
+}
+bool operator>(const std::string B1, const bigInt_t B2)
+{
+        if(!(bigInt_t(B1) == B2) && !(bigInt_t(B1) < B2)) return true;
+        return false;
+}
+bool operator>(const long long B1, const bigInt_t B2)
+{
+        if(!(bigInt_t(B1) == B2) && !(bigInt_t(B1) < B2)) return true;
+        return false;
+}
+bool operator>(const unsigned long long B1, const bigInt_t B2)
+{
+        if(!(bigInt_t(B1) == B2) && !(bigInt_t(B1) < B2)) return true;
+        return false;
+}
+bool operator>(const float B1, const bigInt_t B2)
+{
+        if(!(bigInt_t(B1) == B2) && !(bigInt_t(B1) < B2)) return true;
+        return false;
+}
+bool operator>(const double B1, const bigInt_t B2)
+{
+        if(!(bigInt_t(B1) == B2) && !(bigInt_t(B1) < B2)) return true;
+        return false;
+}
+bool operator>(const long double B1, const bigInt_t B2)
+{
+        if(!(bigInt_t(B1) == B2) && !(bigInt_t(B1) < B2)) return true;
+        return false;
+}
+//operator: <=
+bool operator<=(const int B1, const bigInt_t B2)
+{
+    return (bigInt_t(B1) < B2 || bigInt_t(B1) == B2);
+} 
+bool operator<=(const std::string B1, const bigInt_t B2)
+{
+    return (bigInt_t(B1) < B2 || bigInt_t(B1) == B2);
+} 
+bool operator<=(const long long B1, const bigInt_t B2)
+{
+    return (bigInt_t(B1) < B2 || bigInt_t(B1) == B2);
+} 
+bool operator<=(const unsigned long long B1, const bigInt_t B2)
+{
+    return (bigInt_t(B1) < B2 || bigInt_t(B1) == B2);
+} 
+bool operator<=(const float B1, const bigInt_t B2)
+{
+    return (bigInt_t(B1) < B2 || bigInt_t(B1) == B2);
+} 
+bool operator<=(const double B1, const bigInt_t B2)
+{
+    return (bigInt_t(B1) < B2 || bigInt_t(B1) == B2);
+} 
+bool operator<=(const long double B1, const bigInt_t B2)
+{
+    return (bigInt_t(B1) < B2 || bigInt_t(B1) == B2);
+} 
+//operator: >=
+bool operator>=(const int B1, const bigInt_t B2)
+{
+    return (bigInt_t(B1) > B2 || bigInt_t(B1) == B2);
+} 
+bool operator>=(const std::string B1, const bigInt_t B2)
+{
+    return (bigInt_t(B1) > B2 || bigInt_t(B1) == B2);
+} 
+bool operator>=(const long long B1, const bigInt_t B2)
+{
+    return (bigInt_t(B1) > B2 || bigInt_t(B1) == B2);
+} 
+bool operator>=(const unsigned long long B1, const bigInt_t B2)
+{
+    return (bigInt_t(B1) > B2 || bigInt_t(B1) == B2);
+} 
+bool operator>=(const float B1, const bigInt_t B2)
+{
+    return (bigInt_t(B1) > B2 || bigInt_t(B1) == B2);
+} 
+bool operator>=(const double B1, const bigInt_t B2)
+{
+    return (bigInt_t(B1) > B2 || bigInt_t(B1) == B2);
+} 
+bool operator>=(const long double B1, const bigInt_t B2)
+{
+    return (bigInt_t(B1) > B2 || bigInt_t(B1) == B2);
+} 

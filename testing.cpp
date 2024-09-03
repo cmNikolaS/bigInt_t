@@ -5,6 +5,9 @@
 #include <cmath>
 #include <sstream>
 #include <fstream>
+#include <iomanip>
+
+long long DF = 100000;
 
 // Function to generate a random integer in a given range
 long long randomInt(long long min, long long max) {
@@ -22,144 +25,192 @@ double randomDouble(double min, double max) {
     return dis(gen);
 }
 
-void additionTest() {
-    // Edge cases
-        std::fstream FILE("additionTEST.txt");
-        FILE.clear();
+void additionTest(bool W = true, bool D = true) 
+{
+    std::cin.tie(NULL);
+    std::cin.sync_with_stdio(false);
 
-    bigInt_t a1 = 0, b1 = 0;
-    FILE  << "AT 1: 0 + 0 = " << (a1 + b1) << std::endl;
-
-    bigInt_t a2 = 500000, b2 = 0;
-    FILE  << "AT 2: 500000 + 0 = " << (a2 + b2) << std::endl;
-
-    bigInt_t a3 = -500000, b3 = 500000;
-    FILE  << "AT 3: -500000 + 500000 = " << (a3 + b3) << std::endl;
-
-    bigInt_t a4 = -500000, b4 = -500000;
-    FILE  << "AT 4: -500000 + -500000 = " << (a4 + b4) << std::endl;
-
-    // Random cases
-    for (int i = 0; i < 10000; ++i) {
-        long long int1 = randomInt(-500000, 500000);
-        long long int2 = randomInt(-500000, 500000);
-        bigInt_t bigInt1 = int1;
-        bigInt_t bigInt2 = int2;
+    if(W)
+    {
+        for (unsigned long long i = 0; i < DF; ++i) 
+        {
+            std::cout << "AT, WN ";
+            std::cout << i << '/' << DF << std::endl; 
+            long long int1 = randomInt(-500000, 500000);
+            long long int2 = randomInt(-500000, 500000);
+            long long expected = int1 + int2;
+            
+            bigInt_t bigInt1 = int1;
+            bigInt_t bigInt2 = int2;
+            bigInt_t result = bigInt1 + bigInt2;
+            
+            if(result != expected)
+            {
+                std::cout << "Result: " << result << std::endl << "Excepted: " << expected << std::endl;
+                std::cin.get();
+            }
+        }
+    }
+    if(D)
+    {
+        for (unsigned long long i = 0; i < DF; ++i)
+        {
+            std::cout << "AT, DN "; 
+            std::cout << i << '/' << DF << std::endl; 
         
-        // FILE  << "A: " << bigInt1 << std::endl;
-        // FILE  << "B: " << bigInt2 << std::endl;
-        bigInt_t result = bigInt1 + bigInt2;
-        long long expected = int1 + int2;
-        FILE  << "AT " << (5 + i) << ": " << int1 << " + " << int2 << " = " << result;
-        FILE  << " (Expected: " << expected << ")" << std::endl;
+            long double double1 = randomDouble(-500.0000, 500.0000);
+            long double double2 = randomDouble(-500.0000, 500.0000), e = double1 + double2;
+            
+            bigInt_t bigInt1 = double1;
+            bigInt_t bigInt2 = double2;
+            bigInt_t result = bigInt1 + bigInt2;
+        }
     }
 
-    for (int i = 0; i < 10000; ++i) {
-        double double1 = randomDouble(-5000.00000, 5000.00000);
-        double double2 = randomDouble(-5000.00000, 5000.00000);
-        bigInt_t bigInt1 = double1;
-        bigInt_t bigInt2 = double2;
-        
-        // FILE  << "A: " << bigInt1 << std::endl;
-        // FILE  << "B: " << bigInt2 << std::endl;
-        bigInt_t result = bigInt1 + bigInt2;
-        double expected = double1 + double2;
-        FILE  << "AT " << (10 + i) << ": " << double1 << " + " << double2 << " = " << result;
-        FILE  << " (Expected: " << expected << ")" << std::endl;
-    }
 }
 
-void subtractionTest() {
-    // Edge cases    
-    std::fstream FILE("subtractionTEST.txt");
-        FILE.clear();
+void subtractionTest(bool W = true, bool D = true) 
+{
+    std::cin.tie(NULL);
+    std::cin.sync_with_stdio(false);
+    
+    if(W)
+    {
+        for (unsigned long long i = 0; i < DF; ++i) 
+        {
+            std::cout << "ST, WN ";
+            std::cout << i << '/' << DF << std::endl;
+            
+            long long int1 = randomInt(-500000, 500000);
+            long long int2 = randomInt(-500000, 500000);
+            long long expected = int1 - int2; 
+            
+            bigInt_t bigInt1 = int1;
+            bigInt_t bigInt2 = int2;
+            bigInt_t result = bigInt1 - bigInt2;
 
-    bigInt_t a1 = 0, b1 = 0;
-    FILE  << "Subtraction Test 1: 0 - 0 = " << (a1 - b1) << std::endl;
-
-    bigInt_t a2 = 500000, b2 = 0;
-    FILE  << "Subtraction Test 2: 500000 - 0 = " << (a2 - b2) << std::endl;
-
-    bigInt_t a3 = 500000, b3 = -500000;
-    FILE  << "Subtraction Test 3: 500000 - -500000 = " << (a3 - b3) << std::endl;
-
-    bigInt_t a4 = -500000, b4 = 500000;
-    FILE  << "Subtraction Test 4: -500000 - 500000 = " << (a4 - b4) << std::endl;
-
-    // Random cases
-    for (int i = 0; i < 10000; ++i) {
-        long long int1 = randomInt(-500000, 500000);
-        long long int2 = randomInt(-500000, 500000);
-        bigInt_t bigInt1 = int1;
-        bigInt_t bigInt2 = int2;
-        
-        // FILE  << "A: " << bigInt1 << std::endl;
-        // FILE  << "B: " << bigInt2 << std::endl;
-        bigInt_t result = bigInt1 - bigInt2;
-        long long expected = int1 - int2;
-        FILE  << "Subtraction Test " << (5 + i) << ": " << int1 << " - " << int2 << " = " << result;
-        FILE  << " (Expected: " << expected << ")" << std::endl;
+            if(result != expected)
+            {
+                std::cout << "Result: " << result << std::endl << "Excepted: " << expected << std::endl;
+                std::cin.get();
+            }
+        }
     }
+    if(D)
+    {
+        for (unsigned long long i = 0; i < DF; ++i)
+        {
+            std::cout << "ST, DN";
+            std::cout << i << '/' << DF << std::endl;
+            
+            long double double1 = randomDouble(-500.0000, 500.0000);
+            long double double2 = randomDouble(-500.0000, 500.0000);
+            long double expected = double1 - double2;
+            
+            bigInt_t bigInt1 = double1;
+            bigInt_t bigInt2 = double2;
+            bigInt_t result = bigInt1 - bigInt2;
 
-    for (int i = 0; i < 10000; ++i) {
-        double double1 = randomDouble(-5000.00000, 5000.00000);
-        double double2 = randomDouble(-5000.00000, 5000.00000);
-        bigInt_t bigInt1 = double1;
-        bigInt_t bigInt2 = double2;
-        
-        // FILE  << "A: " << bigInt1 << std::endl;
-        // FILE  << "B: " << bigInt2 << std::endl;
-        bigInt_t result = bigInt1 - bigInt2;
-        double expected = double1 - double2;
-        FILE  << "Subtraction Test " << (10 + i) << ": " << double1 << " - " << double2 << " = " << result;
-        FILE  << " (Expected: " << expected << ")" << std::endl;
+        }
     }
 }
+void multiplicationTest(bool W = true, bool D = true) 
+{
+    std::cin.tie(NULL);
+    std::cin.sync_with_stdio(false);
+    std::fstream FILE1("t_1.txt"), FILE2("t_2.txt");
+    FILE1.clear(); FILE2.clear();
 
-void multiplicationTest() {
-    // Edge cases
-    std::fstream FILE("multiplicationTEST.txt");
-            FILE.clear();
-    bigInt_t a1 = 0, b1 = 0;
-    FILE  << "Multiplication Test 1: 0 * 0 = " << (a1 * b1) << std::endl;
+    if(W)
+    {
+        for (unsigned long long i = 0; i < DF; ++i) 
+        {
+            std::cout << "MT, WN ";
+            std::cout << i << '/' << DF << std::endl;
 
-    bigInt_t a2 = 500000, b2 = 0;
-    FILE  << "Multiplication Test 2: 500000 * 0 = " << (a2 * b2) << std::endl;
-
-    bigInt_t a3 = -500000, b3 = 500000;
-    FILE  << "Multiplication Test 3: -500000 * 500000 = " << (a3 * b3) << std::endl;
-
-    bigInt_t a4 = -500000, b4 = -500000;
-    FILE  << "Multiplication Test 4: -500000 * -500000 = " << (a4 * b4) << std::endl;
-
-    // Random cases with integer values
-    for (int i = 0; i < 10000; ++i) {
-        long long int1 = randomInt(-500000, 500000);
-        long long int2 = randomInt(-500000, 500000);
-        bigInt_t bigInt1 = int1;
-        bigInt_t bigInt2 = int2;
-        
-        // FILE  << "A: " << bigInt1 << std::endl;
-        // FILE  << "B: " << bigInt2 << std::endl;
-        bigInt_t result = bigInt1 * bigInt2;
-        long long expected = int1 * int2;
-        FILE  << "Multiplication Test " << (5 + i) << ": " << int1 << " * " << int2 << " = " << result;
-        FILE  << " (Expected: " << expected << ")" << std::endl;
+            long long int1 = randomInt(-500000, 500000);
+            long long int2 = randomInt(-500000, 500000);
+            long long expected = int1 * int2;
+            
+            bigInt_t bigInt1 = int1;
+            bigInt_t bigInt2 = int2;
+            bigInt_t result = bigInt1 * bigInt2;
+            
+            if(result != expected)
+            {
+                std::cout << "Result: " << result << std::endl << "Excepted: " << expected << std::endl;
+                std::cin.get();
+            }
+        }
     }
-
-    // Random cases with floating-point values
-    for (int i = 0; i < 10000; ++i) {
-        double double1 = randomDouble(-500.0000, 500.0000);
-        double double2 = randomDouble(-500.0000, 500.0000);
-        bigInt_t bigInt1 = double1;
-        bigInt_t bigInt2 = double2;
+    if(D)
+    {
+        for (unsigned long long i = 0; i < DF; ++i) 
+        {
+            
+            std::cout << "MT, DN ";
         
-        // FILE  << "A: " << bigInt1 << std::endl;
-        // FILE  << "B: " << bigInt2 << std::endl;
-        bigInt_t result = bigInt1 * bigInt2;
-        double expected = double1 * double2;
-        FILE  << "Multiplication Test " << (10 + i) << ": " << double1 << " * " << double2 << " = " << result;
-        FILE  << " (Expected: " << expected << ")" << std::endl;
+            std::cout << i << '/' << DF << std::endl;
+
+            long double double1 = randomDouble(-500.0000, 500.0000);
+            long double double2 = randomDouble(-500.0000, 500.0000);
+            long double expected = double(double1 * double2);
+            
+
+            bigInt_t bigInt1 = double1;
+            bigInt_t bigInt2 = double2;
+            bigInt_t result = bigInt1 * bigInt2;
+        }
+    }
+}
+void divisionTest(bool W = true, bool D = true) 
+{
+    std::cin.tie(NULL);
+    std::cin.sync_with_stdio(false);
+    
+    if(W)
+        {for (unsigned long long i = 0; i < DF; ++i) 
+        {
+            std::cout << "DT, WN ";
+            std::cout << i << '/' << DF;
+            
+            long long int1 = randomInt(-500000, 500000);
+            long long int2 = randomInt(-500000, 500000); // Avoid division by zero
+            long double expected = int1 / int2;
+        
+            if(int1 == 0 || int2 == 0) continue;
+        
+            bigInt_t bigInt1 = int1;
+            bigInt_t bigInt2 = int2;
+            bigInt_t result = bigInt1 / bigInt2;
+
+            // if(result != expected)
+            // {
+            //     std::cout << "Result: " << result << std::endl << "Excepted: " << expected << std::endl;
+            //     std::cin.get();  
+            // }
+        }
+    }
+    if(D)
+    {
+        for (unsigned long long i = 0; i < DF; ++i) 
+        {
+            std::cout << "DT, DN ";
+            std::cout << i << '/' << DF << std::endl; 
+
+            long double double1 = randomDouble(-500.000, 500.000);
+            long double double2 = randomDouble(-500.000, 500.000);
+
+            if(double1 == 0 || double2 == 0) continue;
+            double1 /= double2;
+
+            bigInt_t bigInt1 = double1;
+            bigInt_t bigInt2 = double2;
+            bigInt_t result = bigInt1 / bigInt2;  
+
+            std::cout << result << std::endl;
+    
+        }
     }
 }
 
@@ -177,11 +228,13 @@ int main()
 
     system("cls");
 
-    additionTest();
+    // additionTest();
+    // std::cin.ignore();
     // subtractionTest();
+    // std::cin.ignore();
     // multiplicationTest();
-    
-
+    // std::cin.ignore();
+    divisionTest(false, true);
 
     system("pause");
     return 0;

@@ -103,6 +103,8 @@
     "typeinfo": "cpp",
     "cstdarg": "cpp",
     "ctime": "cpp",
-    "sstream": "cpp"
+    "sstream": "cpp",
+    "fstream": "cpp",
+    "iomanip": "cpp"
   }
 }
