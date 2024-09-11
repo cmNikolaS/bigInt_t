@@ -1,9 +1,5 @@
-proveriti da radi djeljenje
-
+fix setPercision stvari
 funkcija sqrt, pow
-
 dodati modus
 dodati %=
 proveriti da radi
-
-dodati sve operatore

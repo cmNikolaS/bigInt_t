@@ -13,7 +13,7 @@ class bigInt_t
     bool isPositive = true;
 
     template<typename T>
-    std::string toString(const T num) const
+    inline std::string toString(const T num) const
     {
         std::ostringstream S;
         S << num;
@@ -40,22 +40,23 @@ class bigInt_t
         }
         return c;
     }
-    bool isNumValid()
+    bool isNumValid(std::string &REASON)
     {
+        bool isValid = true;
         //checking if there is dot if first char is 0
         if(number.at(0) == '0' && number.size() > 1)
         {
             if(number.at(1) != '.')
             {
-                std::cerr << number << "<-- this Number is not Valid!" << std::endl;
-                assert(false && "isNumValid, first char is '0' but second is not '.'!");
+                REASON += "isNumValid, first char is '0' but second is not '.'!";
+                isValid = false;
             }
         }
         //checking if last char is dot
         if(number.at(number.size() - 1) == '.')
         {
-            std::cerr << number << "<-- this Number is not Valid!" << std::endl;
-            assert(false && "isNumValid, last char is '.'!");
+            REASON += "isNumValid, last char is '.'!";
+            isValid = false;
         }
         //checking if all characters are digits
         int numOfDots = 0;
@@ -64,22 +65,23 @@ class bigInt_t
             if(c == '.') numOfDots++;
             else if(!isdigit(c))
             {
-                std::cerr << number << "<-- this Number is not Valid!" << std::endl;
-                assert(false && "isNumValid, char is not digit char(0-9)!");
+                REASON += "isNumValid, char is not digit char(0-9)!";
+                isValid = false;
             }
         }
         //checking if there is more then one digit
         if(numOfDots > 1)
         {
-            std::cerr << number << "<-- this Number is not Valid!" << std::endl;
-            assert(false && "There is more then 1 dots in number!");
+            REASON += "There is more then 1 dots in number!";
+            isValid = false;
         }
         //checking if dot if first or last character
         if(number.at(0) == '.' || number.at(number.size() - 1) == '.')
         {
-            std::cerr << number << "<-- this Number is not Valid!" << std::endl;
-            assert(false && "Dot is First/Last character in Number!");
+            REASON += "Dot is First/Last character in Number!";
+            isValid = false;
         }
+
         if(getNumOfDec(number) != 0)
         {
             for(int i = int(number.size()) - 1; i >= 0; i--)
@@ -89,16 +91,12 @@ class bigInt_t
                 if (c != '0') break;
                 if(c == '0')
                 {
-                    std::cerr << number << "<-- this Number is not Valid!" << std::endl;
-                    assert(false && "isNumValid, number is decimal and ends with 0!");
+                    REASON += "isNumValid, number is decimal and ends with 0!";
+                    isValid = false;
                 }
-                std::cerr << number << "<-- this Number is not Valid!" << std::endl;
-                std::cerr << number.at(std::string::size_type(i)) << "<-- this is not digit nor dot" << std::endl;
-                std::cerr << "How the *** we got here" << std::endl;
-                assert(false && "isNumValid, number is decimal and ends with 0!");
             }
         }
-        return true;
+        return isValid;
     }
     void takeNumber(const std::string NUMBER)
     {
@@ -132,7 +130,7 @@ class bigInt_t
 
         while ((i < num.number.size()) && (num.number.at(i) == '0')) ++i;
 
-        if (i == num.number.size())
+        if(i == num.number.size())
         {
             num.number = "0";
             num.isPositive = true;
@@ -169,13 +167,14 @@ class bigInt_t
             {
                 num.number.erase(num.number.size() - 1, 1);
             }
-        }
-        
-        if(!num.isNumValid())
+        }   
+        std::string REASON = "\0";
+        if(!num.isNumValid(REASON))
         {
             std::cerr << "Number is not valid!" << std::endl;
             std::cerr << "Old: " << old << std::endl;
             std::cerr << "New: " << num << std::endl;
+            std::cerr << "Reason: " << REASON << std::endl;
             assert(false && "Number is not valid!");
         }
     }
@@ -194,7 +193,12 @@ class bigInt_t
     }
     void removeZerosAndDots(std::string &num) const
     {
-        std::string::size_type n = getNumOfDec(num);
+        bigInt_t A = num;
+        formatNumber(A);
+        num = A.number;
+
+        std::string::size_type n = A.numOfNonDecPlaces();
+        
         for(std::string::size_type i = 0; i < n; i++)
             {
                 if(num.at(i) == '0' || num.at(i) == '.')
@@ -259,19 +263,19 @@ class bigInt_t
     }
     bigInt_t(const int num)
     {
-        takeNumber(std::to_string(num));
+        takeNumber(toString<int>(num));
     }
     bigInt_t(std::string num)
     {
-        takeNumber(num);
+        takeNumber(toString<std::string>(num));
     }
     bigInt_t(const long long num)
     {
-        takeNumber(std::to_string(num));
+        takeNumber(toString<long long>(num));
     }
     bigInt_t(const unsigned long long num)
     { 
-        takeNumber(std::to_string(num));
+        takeNumber(toString<unsigned long long>(num));
     }    
     bigInt_t(const float num)
     {
@@ -336,19 +340,19 @@ class bigInt_t
     }
     void operator=(const int num) 
     { 
-        takeNumber(std::to_string(num));
+        takeNumber(toString<int>(num));
     }
     void operator=(const std::string num) 
     { 
-        takeNumber(num);
+        takeNumber(toString<std::string>(num));
     }
     void operator=(const long long num)
     {
-        takeNumber(std::to_string(num));
+        takeNumber(toString<long long>(num));
     }
     void operator=(const unsigned long long num)
     {
-        takeNumber(std::to_string(num));
+        takeNumber(toString<unsigned long long>(num));
     }
     void operator=(const float num)
     {
@@ -394,7 +398,8 @@ class bigInt_t
     }
     bool operator==(const int num) const
     {
-        return (*this == bigInt_t(num));
+        bool e =(*this == bigInt_t(num));
+        return e;
     }
     bool operator==(const std::string num) const
     {
@@ -1254,39 +1259,24 @@ class bigInt_t
         bigInt_t number2 = num.number;
         std::string result_s = "\0";        
         //LOGIC
-        int i = 0;
+        int i = -1;
 
-        int numOfDecimals = 7;
+        const int numOfDecimals = 6;
+        
+        bool hasDot = false, leave = false;
 
-        bool hasDot = false;
-        // std::cout << "Pre while0" << std::endl;
-        // while(number1 < number2)
-        // {
-        //     i++;
-        //     number1 *= 10;
-        // }
-        // if(i >= numOfDecimals) return bigInt_t(0);
-        // result_s.append(i, '0');
-        // std::cout << "Posle while0" << std::endl;
-        // if(i == 1)
-        // {
-        //     result_s.push_back('.');
-        //     hasDot = true;
-        // }
-        // else if(i > 0)
-        // {
-        //     if(!hasDot){
-        //     result_s.insert(1, 1, '.');
-        //     hasDot = true;}
-        // }
         while(i < numOfDecimals)
         {    
             i++;
             while(number1 < number2)
-            {            i++;
+            {   i++;
 
                 if(!hasDot)
                 {
+                    if(i == 1)
+                    {
+                        result_s.push_back('0');
+                    }
                     result_s.push_back('.');
                     hasDot = true;
                 }
@@ -1295,9 +1285,13 @@ class bigInt_t
                 number1 *= 10;
                 if(i == numOfDecimals)
                 {
+                    leave = true; 
                     break;
                 }
             }
+            if(leave)
+            break;
+
             if(number1 == number2)
             {
                 result_s.push_back('1');
@@ -1305,7 +1299,7 @@ class bigInt_t
             }
 
             bigInt_t j = 1;
-            while(number2 * (j+100000000000000) <= number1)//mrzi me da ovo automatizujem sad
+            while(number2 * (j+100000000000000) <= number1)
             {
                 j+=100000000000000;
             }
@@ -1357,7 +1351,6 @@ class bigInt_t
             {
                 j++;
             }
-            std::cout << "f";
             result_s.append(toString<bigInt_t>(j));
             if(!hasDot)
             {
@@ -1366,6 +1359,7 @@ class bigInt_t
             }
             number1 -= (number2 * j);
             number1 *= 10;
+        
             if(number1 == 0)
             {
                 break;
@@ -1432,15 +1426,15 @@ class bigInt_t
 namespace big_Int_t
 {
     bigInt_t min(const bigInt_t a, const bigInt_t b)
-{
-    if(b < a) return b;
-    return a;
-}
+    {
+        if(b < a) return b;
+        return a;
+    }
     bigInt_t max(const bigInt_t a, const bigInt_t b)
-{
-    if(b > a) return b;
-    return a;
-}
+    {
+        if(b > a) return b;
+        return a;
+    }
 }
 //operator: +
 bigInt_t operator+(const int B1, const bigInt_t B2)

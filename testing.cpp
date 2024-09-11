@@ -7,10 +7,11 @@
 #include <fstream>
 #include <iomanip>
 
-long long DF = 100000;
+const unsigned long long DF = 1000000;
 
 // Function to generate a random integer in a given range
-long long randomInt(long long min, long long max) {
+long long randomInt(long long min, long long max) 
+{
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<long long> dis(min, max);
@@ -18,7 +19,8 @@ long long randomInt(long long min, long long max) {
 }
 
 // Function to generate a random floating-point number in a given range
-double randomDouble(double min, double max) {
+double randomDouble(double min, double max) 
+{
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<double> dis(min, max);
@@ -32,10 +34,9 @@ void additionTest(bool W = true, bool D = true)
 
     if(W)
     {
-        for (unsigned long long i = 0; i < DF; ++i) 
+        for(unsigned long long i = 0; i < DF; ++i) 
         {
-            std::cout << "AT, WN ";
-            std::cout << i << '/' << DF << std::endl; 
+            std::cout << "AW " << i << '/' << DF << std::endl; 
             long long int1 = randomInt(-500000, 500000);
             long long int2 = randomInt(-500000, 500000);
             long long expected = int1 + int2;
@@ -55,11 +56,10 @@ void additionTest(bool W = true, bool D = true)
     {
         for (unsigned long long i = 0; i < DF; ++i)
         {
-            std::cout << "AT, DN "; 
-            std::cout << i << '/' << DF << std::endl; 
+            std::cout << "AD " << i << '/' << DF << std::endl; 
         
-            long double double1 = randomDouble(-500.0000, 500.0000);
-            long double double2 = randomDouble(-500.0000, 500.0000), e = double1 + double2;
+            long double double1 = randomDouble(-500.000, 500.000);
+            long double double2 = randomDouble(-500.000, 500.000), e = double1 + double2;
             
             bigInt_t bigInt1 = double1;
             bigInt_t bigInt2 = double2;
@@ -76,10 +76,9 @@ void subtractionTest(bool W = true, bool D = true)
     
     if(W)
     {
-        for (unsigned long long i = 0; i < DF; ++i) 
+        for(unsigned long long i = 0; i < DF; ++i) 
         {
-            std::cout << "ST, WN ";
-            std::cout << i << '/' << DF << std::endl;
+            std::cout << "SW " << i << '/' << DF << std::endl;
             
             long long int1 = randomInt(-500000, 500000);
             long long int2 = randomInt(-500000, 500000);
@@ -98,10 +97,9 @@ void subtractionTest(bool W = true, bool D = true)
     }
     if(D)
     {
-        for (unsigned long long i = 0; i < DF; ++i)
+        for(unsigned long long i = 0; i < DF; ++i)
         {
-            std::cout << "ST, DN";
-            std::cout << i << '/' << DF << std::endl;
+            std::cout << "SD " << i << '/' << DF << std::endl;
             
             long double double1 = randomDouble(-500.0000, 500.0000);
             long double double2 = randomDouble(-500.0000, 500.0000);
@@ -110,7 +108,6 @@ void subtractionTest(bool W = true, bool D = true)
             bigInt_t bigInt1 = double1;
             bigInt_t bigInt2 = double2;
             bigInt_t result = bigInt1 - bigInt2;
-
         }
     }
 }
@@ -119,14 +116,12 @@ void multiplicationTest(bool W = true, bool D = true)
     std::cin.tie(NULL);
     std::cin.sync_with_stdio(false);
     std::fstream FILE1("t_1.txt"), FILE2("t_2.txt");
-    FILE1.clear(); FILE2.clear();
 
     if(W)
     {
         for (unsigned long long i = 0; i < DF; ++i) 
         {
-            std::cout << "MT, WN ";
-            std::cout << i << '/' << DF << std::endl;
+            std::cout << "MW " << i << '/' << DF << std::endl;
 
             long long int1 = randomInt(-500000, 500000);
             long long int2 = randomInt(-500000, 500000);
@@ -145,15 +140,13 @@ void multiplicationTest(bool W = true, bool D = true)
     }
     if(D)
     {
-        for (unsigned long long i = 0; i < DF; ++i) 
+        for(unsigned long long i = 0; i < DF; ++i) 
         {
             
-            std::cout << "MT, DN ";
-        
-            std::cout << i << '/' << DF << std::endl;
+            std::cout << "MD " << i << '/' << DF << std::endl;
 
-            long double double1 = randomDouble(-500.0000, 500.0000);
-            long double double2 = randomDouble(-500.0000, 500.0000);
+            long double double1 = randomDouble(-500.000, 500.000);
+            long double double2 = randomDouble(-500.000, 500.000);
             long double expected = double(double1 * double2);
             
 
@@ -169,10 +162,10 @@ void divisionTest(bool W = true, bool D = true)
     std::cin.sync_with_stdio(false);
     
     if(W)
-        {for (unsigned long long i = 0; i < DF; ++i) 
+    {
+        for(unsigned long long i = 0; i < DF; ++i) 
         {
-            std::cout << "DT, WN ";
-            std::cout << i << '/' << DF;
+            std::cout << "DW " << i << '/' << DF << " ";
             
             long long int1 = randomInt(-500000, 500000);
             long long int2 = randomInt(-500000, 500000); // Avoid division by zero
@@ -183,20 +176,13 @@ void divisionTest(bool W = true, bool D = true)
             bigInt_t bigInt1 = int1;
             bigInt_t bigInt2 = int2;
             bigInt_t result = bigInt1 / bigInt2;
-
-            // if(result != expected)
-            // {
-            //     std::cout << "Result: " << result << std::endl << "Excepted: " << expected << std::endl;
-            //     std::cin.get();  
-            // }
         }
     }
     if(D)
     {
-        for (unsigned long long i = 0; i < DF; ++i) 
+        for(unsigned long long i = 0; i < DF; ++i) 
         {
-            std::cout << "DT, DN ";
-            std::cout << i << '/' << DF << std::endl; 
+            std::cout << "DD " << i << '/' << DF << std::endl; 
 
             long double double1 = randomDouble(-500.000, 500.000);
             long double double2 = randomDouble(-500.000, 500.000);
@@ -207,9 +193,6 @@ void divisionTest(bool W = true, bool D = true)
             bigInt_t bigInt1 = double1;
             bigInt_t bigInt2 = double2;
             bigInt_t result = bigInt1 / bigInt2;  
-
-            std::cout << result << std::endl;
-    
         }
     }
 }
@@ -225,16 +208,9 @@ std::string toString(const T num)
 
 int main()
 {
+    std::cin.sync_with_stdio(false);
+    std::cin.tie(0);
 
-    system("cls");
-
-    // additionTest();
-    // std::cin.ignore();
-    // subtractionTest();
-    // std::cin.ignore();
-    // multiplicationTest();
-    // std::cin.ignore();
-    divisionTest(false, true);
 
     system("pause");
     return 0;

@@ -4,7 +4,7 @@
 #include <iterator>
 #include <iomanip>
 
-void getNumbersAndOp(std::string problem, bigInt_t &A, bigInt_t &B, char &op)
+void getNumbersAndOp(const std::string problem, bigInt_t &A, bigInt_t &B, char &op)
 {
     auto a = problem.find(' ');
     std::string first = problem.substr(0, a);
@@ -17,15 +17,6 @@ void getNumbersAndOp(std::string problem, bigInt_t &A, bigInt_t &B, char &op)
 int main()
 {
     bigInt_t A, B;
-
-    // std::cout << bigInt_t(447.398) / bigInt_t(41.4298) << std::endl;
-    
-    
-    double D = double(double(20)/double(3));
-     B = bigInt_t(20) / bigInt_t(2.5);
-
-    std::cout << "D: " << D << std::endl;
-    std::cout << "B: " << B << std::endl;
 
     do
     {
